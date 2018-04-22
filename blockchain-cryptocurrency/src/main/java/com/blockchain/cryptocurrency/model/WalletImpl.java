@@ -49,6 +49,10 @@ public class WalletImpl implements Wallet {
 	}
 	
 	public Transaction sendMoney(PublicKey recipient, float amount) {
+		if ( this.getPublicKey() == recipient ) {
+			throw new RuntimeException("The sender cannot be the recipient of the money");
+		}
+		
 		// Check if there are funds to pay the amount
 		float balance = requestBalance().floatValue(); 
 		if ( balance < amount) {

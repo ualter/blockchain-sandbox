@@ -28,10 +28,30 @@ public class BlockChain {
 	public static float                          MINIMUM_TRANSACTION = 5;
 	public static int                            DIFFICULTY          = 3;
 	
+	/** 
+	 * The Big Ban
+	 * @return
+	 */
 	public static Wallet initBlockChain() {
 		Wallet genesitWallet = WalletImpl.build();
-		BLOCKCHAIN.add( createGenesisBlock(genesitWallet) );
+		Block genesisBlock = createGenesisBlock(genesitWallet);
+		genesisBlock.calculateHash();
+		genesisBlock.setHeight(1);
+		BLOCKCHAIN.add( genesisBlock );
 		return genesitWallet;
+	}
+	private static Block createGenesisBlock(Wallet genesisWallet) {
+		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
+		Transaction genesisTransaction = new Transaction(genesisWallet.getPublicKey(), genesisWallet.getPublicKey(), 1000f, null);
+		genesisTransaction.generateSignature(genesisWallet.getPrivateKey());
+		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
+		
+		UTXOs.put(genesisTransaction.getOutputs().get(0).getHash(), genesisTransaction.getOutputs().get(0));
+		
+		Block genesisBlock = new Block();
+		genesisBlock.setPreviousBlock(genesisHash);
+		genesisBlock.getTransactions().add(genesisTransaction);
+		return genesisBlock;
 	}
 	
 	/**
@@ -104,24 +124,16 @@ public class BlockChain {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
 		
-		block.setPreviousHash( BLOCKCHAIN.get(BLOCKCHAIN.size() - 1).getHash() );
+		Block previousBlock = BLOCKCHAIN.get(BLOCKCHAIN.size() - 1);
+		
+		block.setPreviousBlock( previousBlock.getHash() );
+		block.calculateHash();
+		block.setHeight(BLOCKCHAIN.size()+1);
 		BLOCKCHAIN.add(block);
+		
+		previousBlock.setNextBlock(block.getHash());
 	}
 
-	private static Block createGenesisBlock(Wallet genesisWallet) {
-		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
-		Transaction genesisTransaction = new Transaction(genesisWallet.getPublicKey(), genesisWallet.getPublicKey(), 1000f, null);
-		genesisTransaction.generateSignature(genesisWallet.getPrivateKey());
-		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
-		
-		UTXOs.put(genesisTransaction.getOutputs().get(0).getHash(), genesisTransaction.getOutputs().get(0));
-		
-		Block genesisBlock = new Block();
-		genesisBlock.setPreviousHash(genesisHash);
-		genesisBlock.getTransactions().add(genesisTransaction);
-		return genesisBlock;
-	}
-	
 	public static Stream<Block> getAllBlocksOfChain() {
 		return BLOCKCHAIN.stream();
 	}

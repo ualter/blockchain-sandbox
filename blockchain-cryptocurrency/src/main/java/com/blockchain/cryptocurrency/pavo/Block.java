@@ -1,62 +1,49 @@
 package com.blockchain.cryptocurrency.pavo;
 
-import java.security.PublicKey;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.blockchain.AbstractBlock;
 import com.blockchain.cryptocurrency.model.Transaction;
-import com.blockchain.cryptocurrency.model.TransactionInput;
-import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class Block extends AbstractBlock {
 	
 	@Getter private List<Transaction> transactions = new ArrayList<Transaction>();
 	
 	public Block() {
 		this.setTimeStamp(Instant.now().toEpochMilli());
-		this.setHash(calculateHash());
 	}
 	
-	public void addTransaction(Transaction transaction) {
+	public Block addTransaction(Transaction transaction) {
 		this.transactions.add(transaction);
+		return this;
 	}
 	
-	private String calculateHash() {
+	public void calculateHash() {
 		double totalTransaction = transactions.stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
-		int    nonce            = -1;
-		String calculatedhash   = "";
-		
-		while ( !isHashValid(calculatedhash, BlockChain.DIFFICULTY) ) {
-			calculatedhash = CryptoHashUtils.applySHA256(
-					  totalTransaction
-					+ Long.toString(this.getTimeStamp())  
-					+ this.getPreviousHash()
-					+ (nonce+=1)
-					//+ this.getMerkleRoot()
-			);
-		}
-		
-		log.debug("Hash {} calculated with nonce {}", calculatedhash, nonce);
-		return calculatedhash;
+		super.calculateHash(String.valueOf(totalTransaction), BlockChain.DIFFICULTY);
 	}
-
+	
 	@Override
 	public String toString() {
+		DecimalFormat df = new DecimalFormat("0000");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		double total = transactions.stream().mapToDouble(d -> d.getValue().doubleValue()).sum();
-		return String.format("Block [%s, total=%.2f]", getHash(), total );
+		return String.format("Block [#%s | Hash=%s | PreviousBlock=%s | NextBlock=%s | TimeStamp=%s | totalTransaction=%s | Nonce=%s]"
+				,StringUtils.rightPad(df.format(getHeight()),4)
+				,StringUtils.rightPad(getHash(),65)
+				,StringUtils.rightPad(getPreviousBlock(),65)
+				,StringUtils.rightPad(getNextBlock() == null ? " " : getNextBlock(),65)
+				,StringUtils.rightPad(formatter.format(getTimeStamp()),22)
+				,StringUtils.leftPad(String.valueOf(total), 12)
+				,StringUtils.rightPad(String.valueOf(getNonce()),5));
 	}
-	
-	
-	
-	
-
-	
-	
 
 }
