@@ -92,13 +92,12 @@ public class Transaction {
 	}
 
 	private String calculateTransactionHash() {
-		// For a unique value transaction hash 
 		String variation = UUID.randomUUID().toString();
 		
 		return CryptoHashUtils.applySHA256(
 				CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
 				CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
-				this.value.toString() +
+				this.value.toString() + 
 				variation
 		);
 	}

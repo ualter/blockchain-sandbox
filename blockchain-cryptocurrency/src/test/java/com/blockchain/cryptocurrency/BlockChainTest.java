@@ -25,10 +25,11 @@ public class BlockChainTest {
 	}
 	
 	@Test
-	public void testBlockChainMerkleTest() {
+	public void testBlockChainMerkleRootTest() {
 		Wallet janeWallet    = WalletImpl.build();
 		Wallet johnWallet    = WalletImpl.build();
 		
+		// Even list transaction
 		Block block = new Block();
 		Transaction transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
 		Transaction transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
@@ -48,12 +49,21 @@ public class BlockChainTest {
 			 .addTransaction(transaction6)
 			 .addTransaction(transaction7);
 		BlockChain.addBlock(block);
+		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
+		System.out.println(block.getMerkleRoot());
 		
-		String merkleRoot1 = block.getMerkleRoot();
-		assertNotNull("Merkle Root is Null?",merkleRoot1);
-		
-		
-		System.out.println(transaction4.getHash());
+		// Odd list transaction
+		block = new Block();
+		transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
+		transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
+		transaction2 = johnWallet.sendMoney(janeWallet, 25f);
+		block = new Block();
+		block.addTransaction(transaction0)
+			 .addTransaction(transaction1)
+			 .addTransaction(transaction2);
+		BlockChain.addBlock(block);
+		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
+		System.out.println(block.getMerkleRoot());
 	}
 
 //	@Test
