@@ -65,5 +65,6 @@ public class Block extends AbstractBlock {
 			super.calculateMerkleRoot(hashs);
 		}
 	}
+	
 
 }

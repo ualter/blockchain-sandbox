@@ -1,5 +1,6 @@
 package com.blockchain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -67,46 +68,48 @@ public abstract class AbstractBlock {
 		
 		String merkleRoot = null;
 		
-		// Only one register, then there is nothing more to do, the only register's hash is also the Merkle Root
-		if ( hashs.size() == 1 ) {
+		if (hashs.size() == 1) {
+			// Only one register, then there is nothing more to do, the only register's hash is also the Merkle Root
 			merkleRoot =  CryptoHashUtils.applySHA256( hashs.get(0) );
 		} else {
-			// More than one register, calculate the Merkle Root based on all of them 
-			String previousHashLeaf = null;
-			while ( true ) {
-				
-				String hash1 = hashs.get(0);
-				// Still has pairs at the List
-				if ( hashs.size() > 1 ) {
-					// Calculate the hash of the Pair
-					String hash2    = hashs.get(1);
-					String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash2 );
-					// Remove the pair of the leave with the calculated hash
-					hashs.remove(0);
-					hashs.remove(0);
+			while ( hashs.size() > 1 ) {
+				hashs = calculateLeavesHash(hashs);
+			}
+			merkleRoot = hashs.get(0);
+		}
+		log.debug("Block Merkle Root calculated: {}", merkleRoot);
+		this.setMerkleRoot(merkleRoot);
+	}
 	
-					if ( previousHashLeaf != null ) {
-						// Subsequent leaves must consider the previous leaf already calculated
-						previousHashLeaf = CryptoHashUtils.applySHA256( previousHashLeaf + hashLeaf );
-					} else {
-						// First leaf on the tree
-						previousHashLeaf = hashLeaf;
-					}
-				} else {
+	
+
+	private List<String> calculateLeavesHash(List<String> hashs) {
+		List<String> leavesHash = new ArrayList<String>();
+		
+		int index = 0;
+		while ( true ) {
+			
+			String hash1 = hashs.get(index);
+			
+			index++;
+			if ( index < hashs.size() ) {
+				// Calculate the hash of the Pair
+				String hash2    = hashs.get(index);
+				String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash2 );
+				leavesHash.add(hashLeaf);
+			} else
+			if ( index == hashs.size() ) {
 				// The last one, without a pair, the total List is odd
-					// As the Merkle Tree is a binary tree, we duplicate the last register to calculate the leaf
-					String hashLeaf  = CryptoHashUtils.applySHA256( hash1 + hash1 );
-					previousHashLeaf = CryptoHashUtils.applySHA256( previousHashLeaf + hashLeaf );
-					hashs.remove(0);
-				}
-				
-				if ( hashs.size() == 0 ) break;
+				// As the Merkle Tree is a binary tree, we duplicate the last register to calculate the leaf
+				String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash1 );
+				leavesHash.add(hashLeaf);
 			}
 			
-			merkleRoot = previousHashLeaf;
-			log.debug("Block Merkle Root calculated: {}", merkleRoot);
-			this.setMerkleRoot(merkleRoot);
+			index++;
+			if ( index >= hashs.size() ) break;
 		}
+		
+		return leavesHash;
 	}
 
 }

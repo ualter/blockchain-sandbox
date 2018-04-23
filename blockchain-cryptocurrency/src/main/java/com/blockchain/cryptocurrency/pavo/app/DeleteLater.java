@@ -11,9 +11,33 @@ import lombok.Data;
 public class DeleteLater {
 	
 	public static void main(String[] args) {
-		
 		testLambaPeek();
+		testMerkleRoot();
+	}
+	
+	private static void testMerkleRoot() {
+		List<String> list = new ArrayList<String>();
+		list.add("A");
+		list.add("B");
+		list.add("C");
+		list.add("D");
+		list.add("E");
+		list.add("F");
+		list.add("G");
+		list.add("H");
+		list.add("I");
+		list.add("J");
+		list.add("K");
+		list.add("L");
+		list.add("M");
+		list.add("N");
+		list.add("O");
+		list.add("P");
 		
+		while ( list.size() > 1 ) {
+			list = calculateLeavesHash(list);
+		}
+		System.out.println(list.get(0));
 	}
 	private static void testLambaPeek() {
 		Map<String,Tra> m = new HashMap<String,Tra>();
@@ -46,6 +70,38 @@ public class DeleteLater {
 		
 		private String id;
 		private Integer valor;
+	}
+	
+	
+	private static List<String> calculateLeavesHash(List<String> hashs) {
+		List<String> leavesHash = new ArrayList<String>();
+		
+		int index = 0;
+		while ( true ) {
+			
+			String hash1 = hashs.get(index);
+			
+			index++;
+			if ( index < hashs.size() ) {
+				// Calculate the hash of the Pair
+				String hash2    = hashs.get(index);
+				//String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash2 );
+				String hashLeaf = hash1 + hash2;
+				leavesHash.add(hashLeaf);
+			} else
+			if ( index == hashs.size() ) {
+				// The last one, without a pair, the total List is odd
+				// As the Merkle Tree is a binary tree, we duplicate the last register to calculate the leaf
+				//String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash1 );
+				String hashLeaf = hash1 + hash1;
+				leavesHash.add(hashLeaf);
+			}
+			
+			index++;
+			if ( index >= hashs.size() ) break;
+		}
+		
+		return leavesHash;
 	}
 
 }
