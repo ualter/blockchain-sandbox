@@ -1,7 +1,6 @@
 package com.blockchain.cryptocurrency.model;
 
 import java.math.BigDecimal;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import com.blockchain.cryptocurrency.pavo.BlockChain;
 import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,22 +27,27 @@ public class Transaction {
 	// Amount of coins sent to the recipient
 	private BigDecimal value;
 	// Sender's public key
-	private PublicKey sender;
+	private PublicKey senderPublicKey;
 	// Receiver's public key
-	private PublicKey recipient;
+	private PublicKey recipientPublickey;
 	// To guarantee the integrity and protection of this transaction
 	private byte[] signature;
+	// Wallets of the Transaction
+	@Getter private Wallet sender;
+	@Getter private Wallet recipient;
 
 	private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
 	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 	
-	public Transaction(PublicKey sender, PublicKey recipient, float value, List<TransactionInput> inputs) {
-		this.value     = BigDecimal.valueOf(value);
-		this.sender    = sender;
-		this.recipient = recipient;
-		this.inputs    = inputs;
+	public Transaction(Wallet sender, Wallet recipient, float value, List<TransactionInput> inputs) {
+		this.sender             = sender;
+		this.recipient          = recipient;
+		this.value              = BigDecimal.valueOf(value);
+		this.senderPublicKey    = sender.getPublicKey();
+		this.recipientPublickey = recipient.getPublicKey();
+		this.inputs             = inputs;
 		this.calculateTransactionHash();
-		
+		this.generateSignature();
 	}
 	
 	public void addOutput(PublicKey recipient, BigDecimal value) {
@@ -54,7 +59,6 @@ public class Transaction {
 	}
 
 	public boolean processTransaction() {
-
 		if (!checkSignature()) {
 			log.error("Error, signature do not match!");
 			return false;
@@ -75,9 +79,9 @@ public class Transaction {
 		this.hash      = calculateTransactionHash();
 		
 		// Send the coins to the Recipient
-		this.outputs.add(new TransactionOutput(this.recipient, value, this.hash));
+		this.outputs.add(new TransactionOutput(this.recipientPublickey, value, this.hash));
 		// Return the change (the leftOver) back to the Sender
-		this.outputs.add(new TransactionOutput(this.sender, BigDecimal.valueOf(leftOver),this.hash));
+		this.outputs.add(new TransactionOutput(this.senderPublicKey, BigDecimal.valueOf(leftOver),this.hash));
 		
 		// Add the Transactions Output generated in this transaction as Unspent Transaction Output (UTXO), that can be spent as an input in a new transaction
 		BlockChain.addToUTXOs(this);
@@ -92,8 +96,8 @@ public class Transaction {
 		String variation = UUID.randomUUID().toString();
 		
 		return CryptoHashUtils.applySHA256(
-				CryptoHashUtils.encodeBase64(this.sender) + 
-				CryptoHashUtils.encodeBase64(this.recipient) + 
+				CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
+				CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
 				this.value.toString() +
 				variation
 		);
@@ -117,24 +121,24 @@ public class Transaction {
 	 */
 	private boolean checkSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.sender) +
-				      CryptoHashUtils.encodeBase64(this.recipient) + 
+		String data = CryptoHashUtils.encodeBase64(this.senderPublicKey) +
+				      CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
 				      this.value.toString();
 		//@formatter:on
-		return CryptoHashUtils.verifySignature(sender, data, signature);
+		return CryptoHashUtils.verifySignature(senderPublicKey, data, signature);
 	}
 	
 	/**
 	 * Generate the Signature of this Transaction
 	 * @param privateKey
 	 */
-	public void generateSignature(PrivateKey privateKey) {
+	private void generateSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.sender) +
-				      CryptoHashUtils.encodeBase64(this.recipient) + 
+		String data = CryptoHashUtils.encodeBase64(this.senderPublicKey) +
+				      CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
 				      this.value.toString();
 		//@formatter:on
-		this.signature = CryptoHashUtils.sign(privateKey, data);
+		this.signature = CryptoHashUtils.sign(this.sender.getPrivateKey(), data);
 	}
 
 	

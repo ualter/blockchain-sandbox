@@ -1,6 +1,7 @@
 package com.blockchain.cryptocurrency;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,35 @@ public class BlockChainTest {
 	public void createTheWorld() {
 		genesisWallet = BlockChain.initBlockChain();
 	}
+	
+	@Test
+	public void testBlockChainMerkleTest() {
+		Wallet janeWallet    = WalletImpl.build();
+		Wallet johnWallet    = WalletImpl.build();
+		
+		Block block = new Block();
+		Transaction transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
+		Transaction transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
+		Transaction transaction2 = johnWallet.sendMoney(janeWallet, 25f);
+		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
+		Transaction transaction4 = genesisWallet.sendMoney(janeWallet, 50f);
+		Transaction transaction5 = genesisWallet.sendMoney(johnWallet, 180f);
+		Transaction transaction6 = johnWallet.sendMoney(janeWallet, 25f);
+		Transaction transaction7 = janeWallet.sendMoney(johnWallet, 5f);
+		block = new Block();
+		block.addTransaction(transaction0)
+			 .addTransaction(transaction1)
+			 .addTransaction(transaction2)
+			 .addTransaction(transaction3)
+			 .addTransaction(transaction4)
+			 .addTransaction(transaction5)
+			 .addTransaction(transaction6)
+			 .addTransaction(transaction7);
+		BlockChain.addBlock(block);
+		
+		String merkleRoot1 = block.getMerkleRoot();
+		assertNotNull("Merkle Root is Null?",merkleRoot1);
+	}
 
 	@Test
 	public void testBlockChain() {
@@ -29,19 +59,19 @@ public class BlockChainTest {
 		Wallet janeWallet    = WalletImpl.build();
 		Wallet johnWallet    = WalletImpl.build();
 		
-		Transaction transaction = genesisWallet.sendMoney(janeWallet.getPublicKey(), 50f);
+		Transaction transaction = genesisWallet.sendMoney(janeWallet, 50f);
 		Block block = new Block();
 		block.addTransaction(transaction);
 		BlockChain.addBlock(block);
 		
-		transaction = genesisWallet.sendMoney(johnWallet.getPublicKey(), 275f);
+		transaction = genesisWallet.sendMoney(johnWallet, 275f);
 		block = new Block();
 		block.addTransaction(transaction);
 		BlockChain.addBlock(block);
 		
-		Transaction transaction1 = genesisWallet.sendMoney(janeWallet.getPublicKey(), 10f);
-		Transaction transaction2 = johnWallet.sendMoney(janeWallet.getPublicKey(), 25f);
-		Transaction transaction3 = janeWallet.sendMoney(johnWallet.getPublicKey(), 5f);
+		Transaction transaction1 = genesisWallet.sendMoney(janeWallet, 10f);
+		Transaction transaction2 = johnWallet.sendMoney(janeWallet, 25f);
+		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
 		block = new Block();
 		block.addTransaction(transaction1)
 			 .addTransaction(transaction2)

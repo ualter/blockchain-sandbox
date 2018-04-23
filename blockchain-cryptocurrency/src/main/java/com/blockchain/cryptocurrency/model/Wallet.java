@@ -11,6 +11,6 @@ public interface Wallet {
 	
 	public void addTransactionOuput(TransactionOutput transactionOutput);
 	
-	public Transaction sendMoney(PublicKey recipient, float amount);
+	public Transaction sendMoney(Wallet recipient, float amount);
 	
 }

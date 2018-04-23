@@ -42,9 +42,8 @@ public class BlockChain {
 	}
 	private static Block createGenesisBlock(Wallet genesisWallet) {
 		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
-		Transaction genesisTransaction = new Transaction(genesisWallet.getPublicKey(), genesisWallet.getPublicKey(), 1000f, null);
-		genesisTransaction.generateSignature(genesisWallet.getPrivateKey());
-		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
+		Transaction genesisTransaction = new Transaction(genesisWallet, genesisWallet, 1000f, null);
+		genesisTransaction.addOutput(genesisTransaction.getRecipient().getPublicKey(), genesisTransaction.getValue());
 		
 		UTXOs.put(genesisTransaction.getOutputs().get(0).getHash(), genesisTransaction.getOutputs().get(0));
 		
@@ -120,17 +119,23 @@ public class BlockChain {
 	
 	
 	public static void addBlock(Block block) {
+		// The BlockChain must be started, the "Genesis" Transaction must appear before
 		if ( BLOCKCHAIN.isEmpty() ) {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
 		
+		// Get the previous block hash to set this one with it
 		Block previousBlock = BLOCKCHAIN.get(BLOCKCHAIN.size() - 1);
-		
 		block.setPreviousBlock( previousBlock.getHash() );
+		// Calculate its own hash
 		block.calculateHash();
+		// Set its position on the chain
 		block.setHeight(BLOCKCHAIN.size()+1);
+		// Calculate the Merkle Root of the Block
+		block.calculateMerkleRoot();
+		// It is ready to join the chain 
 		BLOCKCHAIN.add(block);
-		
+		// Inform to set the former last Block which are the next now in the chain 
 		previousBlock.setNextBlock(block.getHash());
 	}
 

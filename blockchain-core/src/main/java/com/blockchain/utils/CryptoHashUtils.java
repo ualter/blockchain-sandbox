@@ -18,6 +18,11 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 
+ * @author Ualter Junior
+ *
+ */
 @Slf4j
 @SuppressWarnings("unused")
 public class CryptoHashUtils {

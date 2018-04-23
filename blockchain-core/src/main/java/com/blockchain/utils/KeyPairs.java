@@ -7,6 +7,11 @@ import java.security.Security;
 
 import lombok.Getter;
 
+/**
+ * 
+ * @author Ualter Junior
+ *
+ */
 public class KeyPairs {
 	
 	static {

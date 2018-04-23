@@ -48,16 +48,18 @@ public class WalletImpl implements Wallet {
 		return BlockChain.requestBalance( this );
 	}
 	
-	public Transaction sendMoney(PublicKey recipient, float amount) {
+	@Override
+	public Transaction sendMoney(Wallet recipient, float amount) {
 		if ( this.getPublicKey() == recipient ) {
-			throw new RuntimeException("The sender cannot be the recipient of the money");
+			throw new RuntimeException("Transaction invalid! The sender cannot be the recipient of the own money");
 		}
 		
 		// Check if there are funds to pay the amount
 		float balance = requestBalance().floatValue(); 
 		if ( balance < amount) {
-			log.warn("Not enough money to commit this transaction of {}, the available funds now are: {}", amount, balance);
-			return null;
+			String msg = String.format("Not enough money to commit this transaction of %01.2f the available funds now are: %01.2f", amount, balance);
+			log.error(msg);
+			throw new RuntimeException(msg);
 		}
 		
 		// Collect the money from his/her UTXOs available (BlockChain) when requested the Balance 
@@ -70,20 +72,15 @@ public class WalletImpl implements Wallet {
 		}
 		
 		// Create the transaction with the PublicKey of the Sender and Recipient, the amount and the Inputs from the UTXOs
-		Transaction transaction = new Transaction(this.getPublicKey(), recipient , amount, inputs);
-		// Sign the transaction with its PrivateKey (Sender)
-		transaction.generateSignature( this.getPrivateKey() );
-		transaction.processTransaction();
+		Transaction transaction = new Transaction(this, recipient , amount, inputs);
+		if ( !transaction.processTransaction() ) {
+			throw new RuntimeException("The transaction could no be processed");
+		}
 		
 		// Remove from the Sender's UTXOs (BlockChain) the Inputs sent to the Recipient 
 		inputs.forEach( ti -> this.UTXOs.remove(ti.getHash()) );
 		
 		return transaction;
 	}
-
-	
-
-	
-		
 	
 }
