@@ -35,11 +35,16 @@ public class WalletImpl implements Wallet {
 		return new WalletImpl(false, null);
 	}
 	
-	private WalletImpl(boolean persistedKeyPairs, String walletOwner) {
+	/**
+	 * 
+	 * @param userPersistedKeyPairs - If true, the keys will be generated automatically the first time, and then subsequently those Keys will be loaded to used again (using the walletOwner as the key) 
+	 * @param walletOwner - The key of the wallet owner
+	 */
+	private WalletImpl(boolean userPersistedKeyPairs, String walletOwner) {
 		if ( StringUtils.isBlank(walletOwner) ) {
 			throw new IllegalArgumentException("Wallet Owner must be informed when they key pairs are being persisted");
 		}
-		if ( !persistedKeyPairs ) {
+		if ( !userPersistedKeyPairs ) {
 			this.keyPairs = KeyPairs.generate();
 		} else {
 			Path pathFile = Paths.get("src/main/resources/" + walletOwner + ".keys");
