@@ -59,7 +59,7 @@ public abstract class AbstractBlock {
 	/**
 	 * This where is calculated the Block's Merkle Root
 	 * This Hash is used to prove the integrity of all of the transactions in this Block, that they weren't changed, tampered. 
-	 * The value os this Merkle Root should always be the same if any of the original's values were touched.
+	 * The value os this Merkle Root should always be the same if any of the original's values were not touched.
 	 */
 	protected void calculateMerkleRoot(List<String> hashs) {
 		if ( this.getMerkleRoot() != null ) {

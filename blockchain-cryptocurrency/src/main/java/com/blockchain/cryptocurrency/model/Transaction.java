@@ -95,10 +95,10 @@ public class Transaction {
 		String variation = UUID.randomUUID().toString();
 		
 		return CryptoHashUtils.applySHA256(
-				CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
-				CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
-				this.value.toString() + 
-				variation
+			   CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
+			   CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
+			   this.value.toString() + 
+			   variation
 		);
 	}
 	

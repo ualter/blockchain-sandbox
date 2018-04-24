@@ -22,13 +22,22 @@ public class KeyPairs {
 	@Getter private PublicKey publicKey;
 
 	public static KeyPairs generate() {
-		return new KeyPairs();
+		return new KeyPairs(true);
+	}
+	
+	public static KeyPairs generate(PrivateKey privateKey, PublicKey publicKey) {
+		KeyPairs keyPairs   = new KeyPairs(false);
+		keyPairs.privateKey = privateKey;
+		keyPairs.publicKey  = publicKey;
+		return keyPairs;
 	}
 
-	private KeyPairs() {
-		KeyPair keyPair = CryptoHashUtils.generateKeyPairs();
-		this.privateKey = keyPair.getPrivate();
-		this.publicKey  = keyPair.getPublic();
+	private KeyPairs(boolean generateKeys) {
+		if (generateKeys) {
+			KeyPair keyPair = CryptoHashUtils.generateKeyPairs();
+			this.privateKey = keyPair.getPrivate();
+			this.publicKey  = keyPair.getPublic();
+		}
 	}
 
 	

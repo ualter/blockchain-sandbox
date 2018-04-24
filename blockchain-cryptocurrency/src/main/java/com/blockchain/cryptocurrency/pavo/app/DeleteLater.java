@@ -1,18 +1,28 @@
 package com.blockchain.cryptocurrency.pavo.app;
 
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 public class DeleteLater {
 	
-	public static void main(String[] args) {
-		testLambaPeek();
-		testMerkleRoot();
+	public static void main(String[] args) throws Exception {
+		//testLambaPeek();
+		//testMerkleRoot();
+		
+		//CryptoHashUtils.saveKeyECSDAPairsInFile("/home/ujunior/Descargas/jane.pem");
+		CryptoHashUtils.loadKeyECSDAPairsInFile("/home/ujunior/Descargas/jane.pem");
 	}
 	
 	private static void testMerkleRoot() {
