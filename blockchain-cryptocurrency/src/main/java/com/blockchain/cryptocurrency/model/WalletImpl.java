@@ -1,6 +1,9 @@
 package com.blockchain.cryptocurrency.model;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -8,7 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.blockchain.cryptocurrency.pavo.BlockChain;
+import com.blockchain.utils.CryptoHashUtils;
 import com.blockchain.utils.KeyPairs;
 
 import lombok.Data;
@@ -21,12 +27,27 @@ public class WalletImpl implements Wallet {
 	private KeyPairs keyPairs;
 	private Map<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 	
-	public static Wallet build() {
-		return new WalletImpl();
+	public static Wallet build(boolean persistedKeyPairs, String walletOwner) {
+		return new WalletImpl(persistedKeyPairs, walletOwner);
 	}
 	
-	private WalletImpl() {
-		this.keyPairs = KeyPairs.generate();
+	public static Wallet build() {
+		return new WalletImpl(false, null);
+	}
+	
+	private WalletImpl(boolean persistedKeyPairs, String walletOwner) {
+		if ( StringUtils.isBlank(walletOwner) ) {
+			throw new IllegalArgumentException("Wallet Owner must be informed when they key pairs are being persisted");
+		}
+		if ( !persistedKeyPairs ) {
+			this.keyPairs = KeyPairs.generate();
+		} else {
+			Path pathFile = Paths.get("src/main/resources/" + walletOwner + ".keys");
+			if ( !Files.exists(pathFile) ) {
+				CryptoHashUtils.saveKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
+			}
+			CryptoHashUtils.loadKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
+		}
 	}
 	
 	@Override
