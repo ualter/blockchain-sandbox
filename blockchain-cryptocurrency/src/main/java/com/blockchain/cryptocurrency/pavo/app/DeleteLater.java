@@ -18,8 +18,10 @@ public class DeleteLater {
 	public static void main(String[] args) throws Exception {
 		//testLambaPeek();
 		//testMerkleRoot();
-		
-		
+		saveLoadKeys();
+	}
+
+	private static void saveLoadKeys() {
 		Path pathFile = Paths.get("src/main/resources/jane.keys");
 		if ( !Files.exists(pathFile) ) {
 			CryptoHashUtils.saveKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());

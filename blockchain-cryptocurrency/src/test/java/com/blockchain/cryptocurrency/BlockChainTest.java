@@ -26,8 +26,8 @@ public class BlockChainTest {
 	
 	@Test
 	public void testBlockChainMerkleRootTest() {
-		Wallet janeWallet    = WalletImpl.build();
-		Wallet johnWallet    = WalletImpl.build();
+		Wallet janeWallet    = WalletImpl.build("jane");
+		Wallet johnWallet    = WalletImpl.build("john");
 		
 		// Even list transaction
 		Block block = new Block();
@@ -63,7 +63,6 @@ public class BlockChainTest {
 			 .addTransaction(transaction2);
 		BlockChain.addBlock(block);
 		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
-		System.out.println(block.getMerkleRoot());
 	}
 
 //	@Test

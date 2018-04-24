@@ -20,6 +20,11 @@ import com.blockchain.utils.KeyPairs;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 
+ * @author Ualter Junior
+ *
+ */
 @Slf4j
 @Data
 public class WalletImpl implements Wallet {
@@ -27,31 +32,26 @@ public class WalletImpl implements Wallet {
 	private KeyPairs keyPairs;
 	private Map<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 	
-	public static Wallet build(boolean persistedKeyPairs, String walletOwner) {
-		return new WalletImpl(persistedKeyPairs, walletOwner);
+	public static Wallet build(String walletOwner) {
+		return new WalletImpl(walletOwner);
 	}
 	
 	public static Wallet build() {
-		return new WalletImpl(false, null);
+		return new WalletImpl(null);
 	}
 	
 	/**
-	 * 
-	 * @param userPersistedKeyPairs - If true, the keys will be generated automatically the first time, and then subsequently those Keys will be loaded to used again (using the walletOwner as the key) 
-	 * @param walletOwner - The key of the wallet owner
+	 * @param walletOwner - If not null, the keys will be generated automatically the first time, and then subsequently those Keys will be loaded to used again (using the walletOwner as the key)
 	 */
-	private WalletImpl(boolean userPersistedKeyPairs, String walletOwner) {
-		if ( StringUtils.isBlank(walletOwner) ) {
-			throw new IllegalArgumentException("Wallet Owner must be informed when they key pairs are being persisted");
-		}
-		if ( !userPersistedKeyPairs ) {
+	private WalletImpl(String walletOwner) {
+	    if ( StringUtils.isBlank(walletOwner) ) {
 			this.keyPairs = KeyPairs.generate();
 		} else {
 			Path pathFile = Paths.get("src/main/resources/" + walletOwner + ".keys");
 			if ( !Files.exists(pathFile) ) {
 				CryptoHashUtils.saveKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
 			}
-			CryptoHashUtils.loadKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
+			this.keyPairs = CryptoHashUtils.loadKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
 		}
 	}
 	

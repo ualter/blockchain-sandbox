@@ -97,8 +97,8 @@ public class Transaction {
 		return CryptoHashUtils.applySHA256(
 			   CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
 			   CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
-			   this.value.toString() + 
-			   variation
+			   this.value.toString() 
+			   //+ variation
 		);
 	}
 	
