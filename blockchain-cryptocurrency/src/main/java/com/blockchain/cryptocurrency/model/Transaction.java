@@ -140,6 +140,22 @@ public class Transaction {
 		this.signature = CryptoHashUtils.sign(this.sender.getPrivateKey(), data);
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Transaction [value=");
+		builder.append(value);
+		builder.append(", inputs=");
+		builder.append(inputs);
+		builder.append(", outputs=");
+		builder.append(outputs);
+		builder.append("]");
+		return builder.toString();
+	}
+	
+	
+	
+
 	
 	
 }

@@ -3,6 +3,8 @@ package com.blockchain.cryptocurrency;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Base64;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,35 +36,43 @@ public class BlockChainTest {
 		Transaction transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
 		Transaction transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
 		Transaction transaction2 = johnWallet.sendMoney(janeWallet, 25f);
-		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
-		Transaction transaction4 = genesisWallet.sendMoney(janeWallet, 50f);
-		Transaction transaction5 = genesisWallet.sendMoney(johnWallet, 180f);
-		Transaction transaction6 = johnWallet.sendMoney(janeWallet, 25f);
-		Transaction transaction7 = janeWallet.sendMoney(johnWallet, 5f);
+//		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
+//		Transaction transaction4 = genesisWallet.sendMoney(janeWallet, 50f);
+//		Transaction transaction5 = genesisWallet.sendMoney(johnWallet, 180f);
+//		Transaction transaction6 = johnWallet.sendMoney(janeWallet, 25f);
+//		Transaction transaction7 = janeWallet.sendMoney(johnWallet, 5f);
 		block = new Block();
 		block.addTransaction(transaction0)
 			 .addTransaction(transaction1)
 			 .addTransaction(transaction2)
-			 .addTransaction(transaction3)
-			 .addTransaction(transaction4)
-			 .addTransaction(transaction5)
-			 .addTransaction(transaction6)
-			 .addTransaction(transaction7);
+//			 .addTransaction(transaction3)
+//			 .addTransaction(transaction4)
+//			 .addTransaction(transaction5)
+//			 .addTransaction(transaction6)
+//			 .addTransaction(transaction7)
+			 ;
 		BlockChain.addBlock(block);
 		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
-		System.out.println(block.getMerkleRoot());
 		
-		// Odd list transaction
-		block = new Block();
-		transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
-		transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
-		transaction2 = johnWallet.sendMoney(janeWallet, 25f);
-		block = new Block();
-		block.addTransaction(transaction0)
-			 .addTransaction(transaction1)
-			 .addTransaction(transaction2);
-		BlockChain.addBlock(block);
-		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
+//		// Jane
+		System.out.println(BlockChain.queryBalance(janeWallet).doubleValue());
+		System.out.println(BlockChain.queryBalance(johnWallet).doubleValue());
+		System.out.println(BlockChain.queryBalance(genesisWallet).doubleValue());
+		
+//		// Odd list transaction
+//		block = new Block();
+//		transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
+//		transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
+//		transaction2 = johnWallet.sendMoney(janeWallet, 25f);
+//		block = new Block();
+//		block.addTransaction(transaction0)
+//			 .addTransaction(transaction1)
+//			 .addTransaction(transaction2);
+//		BlockChain.addBlock(block);
+//		
+//		System.out.println(BlockChain.queryBalance(janeWallet).doubleValue());
+//		System.out.println(BlockChain.queryBalance(johnWallet).doubleValue());
+//		System.out.println(BlockChain.queryBalance(genesisWallet).doubleValue());
 	}
 
 //	@Test
