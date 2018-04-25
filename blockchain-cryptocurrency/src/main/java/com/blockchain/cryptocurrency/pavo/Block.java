@@ -26,12 +26,12 @@ public class Block extends AbstractBlock {
 		return this;
 	}
 	
-	public void calculateHash() {
+	public void startMining() {
 		if (transactions == null || transactions.size() == 0) {
 			throw new RuntimeException("There's no transaction in this Block to be added to the BlockChain");
 		}
 		double totalTransaction = transactions.stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
-		super.calculateHash(String.valueOf(totalTransaction), BlockChain.DIFFICULTY);
+		super.startMining(String.valueOf(totalTransaction), BlockChain.DIFFICULTY);
 	}
 	
 	@Override

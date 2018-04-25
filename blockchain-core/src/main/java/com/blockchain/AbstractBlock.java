@@ -32,7 +32,7 @@ public abstract class AbstractBlock {
 		return false;
 	}
 	
-	protected void calculateHash(String data, int difficulty) {
+	protected void startMining(String data, int difficulty) {
 		if ( this.getHash() != null ) {
 			throw new RuntimeException("The Hash of this Block were already calculated");
 		}

@@ -37,7 +37,7 @@ public class BlockChain {
 	public static Wallet initBlockChain() {
 		Wallet genesitWallet = WalletImpl.build();
 		Block genesisBlock = createGenesisBlock(genesitWallet);
-		genesisBlock.calculateHash();
+		genesisBlock.startMining();
 		genesisBlock.setHeight(1);
 		BLOCKCHAIN.add( genesisBlock );
 		return genesitWallet;
@@ -130,7 +130,7 @@ public class BlockChain {
 		Block previousBlock = BLOCKCHAIN.get(BLOCKCHAIN.size() - 1);
 		block.setPreviousBlock( previousBlock.getHash() );
 		// Calculate its own hash
-		block.calculateHash();
+		block.startMining();
 		// Set its position on the chain
 		block.setHeight(BLOCKCHAIN.size()+1);
 		// Join the Block to the Chain 
