@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
@@ -13,6 +14,7 @@ import com.blockchain.cryptocurrency.model.Transaction;
 import com.blockchain.cryptocurrency.model.TransactionOutput;
 import com.blockchain.cryptocurrency.model.Wallet;
 import com.blockchain.cryptocurrency.model.WalletImpl;
+import com.blockchain.utils.CryptoHashUtils;
 
 /**
  * This is the Global Ledger, the BlockChain of Coins
@@ -131,16 +133,43 @@ public class BlockChain {
 		block.calculateHash();
 		// Set its position on the chain
 		block.setHeight(BLOCKCHAIN.size()+1);
-		// Calculate the Merkle Root of the Block
-		block.calculateMerkleRoot();
-		// It is ready to join the chain 
+		// Join the Block to the Chain 
 		BLOCKCHAIN.add(block);
 		// Inform to set the former last Block which are the next now in the chain 
 		previousBlock.setNextBlock(block.getHash());
+		// Calculate the Merkle Root of the BlockChain
+		List<String> hashsOfAllBlocks = BlockChain.getAllBlocksOfChain().map(b -> b.getHash()).collect(Collectors.toList());
+		String merkleRoot = CryptoHashUtils.MerkleRoot.calculateMerkleRoot(hashsOfAllBlocks);
+		BLOCKCHAIN.stream().forEach(b -> b.setMerkleRoot(merkleRoot));  // For now, set to all of them, I do not know yet if just the last of the tree is enough
 	}
 
 	public static Stream<Block> getAllBlocksOfChain() {
 		return BLOCKCHAIN.stream();
+	}
+	
+	public static boolean validateChain(Stream<Block> streamOfBlocks) {
+		return validateChain(streamOfBlocks.collect(Collectors.toList()));
+	}
+	public static boolean validateChain(List<Block> blocks) {
+		StringBuilder feed;
+		for (Block block : blocks) {
+			
+			double data = block.getTransactions().stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
+			
+			feed = new StringBuilder();
+			feed.append(String.valueOf(data))
+			  .append(Long.toString(block.getTimeStamp()))
+			  .append(block.getPreviousBlock())
+			  .append(String.valueOf(block.getNonce().intValue()));
+			
+			String hashResulting = CryptoHashUtils.applySHA256(feed.toString());
+			
+			if ( !hashResulting.equals( block.getHash() ) ) {
+				return false;
+			}
+			
+		}
+		return true;
 	}
 	
 }

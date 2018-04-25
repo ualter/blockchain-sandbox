@@ -5,13 +5,11 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.blockchain.AbstractBlock;
 import com.blockchain.cryptocurrency.model.Transaction;
-import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.Getter;
 
@@ -53,18 +51,5 @@ public class Block extends AbstractBlock {
 				,StringUtils.rightPad(String.valueOf(getNonce()),5));
 	}
 
-	/**
-	 * This Hash (Merkle Root) it can be used to prove the integrity of all of the transactions in this Block
-	 */
-	public void calculateMerkleRoot() {
-		// Only one transaction, then there is nothing more to do, the only transaction hash is the Merkle root transaction
-		if ( this.transactions.size() == 1 ) {
-			this.setMerkleRoot( CryptoHashUtils.applySHA256( this.transactions.get(0).getHash() ) );
-		} else {
-			List<String> hashs = this.transactions.stream().map(t -> t.getHash()).collect(Collectors.toList());
-			super.calculateMerkleRoot(hashs);
-		}
-	}
-	
 
 }
