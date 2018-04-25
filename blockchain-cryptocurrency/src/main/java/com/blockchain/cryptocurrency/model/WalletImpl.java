@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 public class WalletImpl implements Wallet {
 	
+	private String   owner;
 	private KeyPairs keyPairs;
 	private Map<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 	
@@ -45,8 +46,10 @@ public class WalletImpl implements Wallet {
 	 */
 	private WalletImpl(String walletOwner) {
 	    if ( StringUtils.isBlank(walletOwner) ) {
+	    	this.owner    = "anonymous";
 			this.keyPairs = KeyPairs.generate();
 		} else {
+			this.owner    = walletOwner;
 			Path pathFile = Paths.get("src/main/resources/" + walletOwner + ".keys");
 			if ( !Files.exists(pathFile) ) {
 				CryptoHashUtils.saveKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
@@ -83,7 +86,7 @@ public class WalletImpl implements Wallet {
 		// Check if there are funds to pay the amount
 		float balance = requestBalance().floatValue(); 
 		if ( balance < amount) {
-			String msg = String.format("Not enough money to commit this transaction of %01.2f the available funds now are: %01.2f", amount, balance);
+			String msg = String.format("Not enough money to \"%s\" to commit this transaction of %01.2f the available funds now are: %01.2f", owner, amount, balance);
 			log.error(msg);
 			throw new RuntimeException(msg);
 		}
@@ -107,6 +110,11 @@ public class WalletImpl implements Wallet {
 		inputs.forEach( ti -> this.UTXOs.remove(ti.getHash()) );
 		
 		return transaction;
+	}
+
+	@Override
+	public String getOwner() {
+		return this.owner;
 	}
 	
 }

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.blockchain.cryptocurrency.pavo.BlockChain;
 import com.blockchain.utils.CryptoHashUtils;
 
@@ -46,7 +48,7 @@ public class Transaction {
 		this.senderPublicKey    = sender.getPublicKey();
 		this.recipientPublickey = recipient.getPublicKey();
 		this.inputs             = inputs;
-		this.calculateTransactionHash();
+		this.hash               = this.calculateTransactionHash();
 		this.generateSignature();
 	}
 	
@@ -76,7 +78,9 @@ public class Transaction {
 		
 		// What is left after pay the sent value (This is the change for the Sender) 
 		float leftOver = totalTransaction - this.value.floatValue();
-		this.hash      = calculateTransactionHash();
+		if ( StringUtils.isBlank(this.hash) ) {
+			throw new RuntimeException("The Hash of the Transaction were not calculated yet, must be done before it be processed");
+		}
 		
 		// Send the coins to the Recipient
 		this.outputs.add(new TransactionOutput(this.recipientPublickey, value, this.hash));
@@ -92,13 +96,13 @@ public class Transaction {
 	}
 
 	private String calculateTransactionHash() {
-		String variation = UUID.randomUUID().toString();
+		String uuidTransaction = UUID.randomUUID().toString();
 		
 		return CryptoHashUtils.applySHA256(
 			   CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
 			   CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
-			   this.value.toString() 
-			   //+ variation
+			   this.value.toString() + 
+			   uuidTransaction
 		);
 	}
 	
@@ -145,6 +149,8 @@ public class Transaction {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Transaction [value=");
 		builder.append(value);
+		builder.append(", Sender=" + this.sender.getOwner());
+		builder.append(", Recipient=" + this.recipient.getOwner());
 		builder.append(", inputs=");
 		builder.append(inputs);
 		builder.append(", outputs=");

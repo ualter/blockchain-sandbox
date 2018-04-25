@@ -13,4 +13,6 @@ public interface Wallet {
 	
 	public Transaction sendMoney(Wallet recipient, float amount);
 	
+	public String getOwner();
+	
 }

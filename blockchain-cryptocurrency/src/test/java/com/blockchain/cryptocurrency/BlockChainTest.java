@@ -16,6 +16,9 @@ import com.blockchain.cryptocurrency.model.WalletImpl;
 import com.blockchain.cryptocurrency.pavo.Block;
 import com.blockchain.cryptocurrency.pavo.BlockChain;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RunWith(SpringRunner.class)
 public class BlockChainTest {
 	
@@ -27,7 +30,7 @@ public class BlockChainTest {
 	}
 	
 	@Test
-	public void testBlockChainMerkleRootTest() {
+	public void testBlockChainTwoBlocks() {
 		Wallet janeWallet    = WalletImpl.build("jane");
 		Wallet johnWallet    = WalletImpl.build("john");
 		
@@ -36,78 +39,96 @@ public class BlockChainTest {
 		Transaction transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
 		Transaction transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
 		Transaction transaction2 = johnWallet.sendMoney(janeWallet, 25f);
-//		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
-//		Transaction transaction4 = genesisWallet.sendMoney(janeWallet, 50f);
-//		Transaction transaction5 = genesisWallet.sendMoney(johnWallet, 180f);
-//		Transaction transaction6 = johnWallet.sendMoney(janeWallet, 25f);
-//		Transaction transaction7 = janeWallet.sendMoney(johnWallet, 5f);
+		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
+		Transaction transaction4 = genesisWallet.sendMoney(janeWallet, 50f);
+		Transaction transaction5 = genesisWallet.sendMoney(johnWallet, 180f);
+		Transaction transaction6 = johnWallet.sendMoney(janeWallet, 25f);
+		Transaction transaction7 = janeWallet.sendMoney(johnWallet, 5f);
 		block = new Block();
 		block.addTransaction(transaction0)
 			 .addTransaction(transaction1)
 			 .addTransaction(transaction2)
-//			 .addTransaction(transaction3)
-//			 .addTransaction(transaction4)
-//			 .addTransaction(transaction5)
-//			 .addTransaction(transaction6)
-//			 .addTransaction(transaction7)
+			 .addTransaction(transaction3)
+			 .addTransaction(transaction4)
+			 .addTransaction(transaction5)
+			 .addTransaction(transaction6)
+			 .addTransaction(transaction7)
 			 ;
 		BlockChain.addBlock(block);
 		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
 		
-//		// Jane
-		System.out.println(BlockChain.queryBalance(janeWallet).doubleValue());
-		System.out.println(BlockChain.queryBalance(johnWallet).doubleValue());
-		System.out.println(BlockChain.queryBalance(genesisWallet).doubleValue());
 		
-//		// Odd list transaction
-//		block = new Block();
-//		transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
-//		transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
-//		transaction2 = johnWallet.sendMoney(janeWallet, 25f);
-//		block = new Block();
-//		block.addTransaction(transaction0)
-//			 .addTransaction(transaction1)
-//			 .addTransaction(transaction2);
-//		BlockChain.addBlock(block);
-//		
-//		System.out.println(BlockChain.queryBalance(janeWallet).doubleValue());
-//		System.out.println(BlockChain.queryBalance(johnWallet).doubleValue());
-//		System.out.println(BlockChain.queryBalance(genesisWallet).doubleValue());
+		double janeWalletBalance    = BlockChain.queryBalance(janeWallet).doubleValue();
+		double johnWalletBalance    = BlockChain.queryBalance(johnWallet).doubleValue();
+		double genesisWalletBalance = BlockChain.queryBalance(genesisWallet).doubleValue();
+		assertEquals("Jane Wallet",140d, janeWalletBalance,0);
+		assertEquals("John Wallet",320d, johnWalletBalance,0);
+		assertEquals("Genesis Wallet",540d, genesisWalletBalance,0);
+		assertEquals("Total Balance BlockChain",1000d, (janeWalletBalance+johnWalletBalance+genesisWalletBalance),0);
+		
+		
+		// Odd list transaction
+		block = new Block();
+		transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
+		transaction1 = genesisWallet.sendMoney(johnWallet, 180f);
+		transaction2 = johnWallet.sendMoney(janeWallet, 25f);
+		block = new Block();
+		block.addTransaction(transaction0)
+			 .addTransaction(transaction1)
+			 .addTransaction(transaction2);
+		BlockChain.addBlock(block);
+		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
+		
+		janeWalletBalance    = BlockChain.queryBalance(janeWallet).doubleValue();
+		johnWalletBalance    = BlockChain.queryBalance(johnWallet).doubleValue();
+		genesisWalletBalance = BlockChain.queryBalance(genesisWallet).doubleValue();
+		
+		assertEquals("Jane Wallet",215d, janeWalletBalance,0);
+		assertEquals("John Wallet",475, johnWalletBalance,0);
+		assertEquals("Genesis Wallet",310d, genesisWalletBalance,0);
+		assertEquals("Total Balance BlockChain",1000d, (janeWalletBalance+johnWalletBalance+genesisWalletBalance),0);
+		
+		if ( log.isDebugEnabled() ) {
+			System.out.println(" *** BLOCKs at testBlockChainTwoBlocks");
+			BlockChain.getAllBlocksOfChain().forEach(System.out::println);
+			System.out.println("");
+		}
 	}
 
-//	@Test
-//	public void testBlockChain() {
-//		
-//		Wallet janeWallet    = WalletImpl.build();
-//		Wallet johnWallet    = WalletImpl.build();
-//		
-//		Transaction transaction = genesisWallet.sendMoney(janeWallet, 50f);
-//		Block block = new Block();
-//		block.addTransaction(transaction);
-//		BlockChain.addBlock(block);
-//		
-//		transaction = genesisWallet.sendMoney(johnWallet, 275f);
-//		block = new Block();
-//		block.addTransaction(transaction);
-//		BlockChain.addBlock(block);
-//		
-//		Transaction transaction1 = genesisWallet.sendMoney(janeWallet, 10f);
-//		Transaction transaction2 = johnWallet.sendMoney(janeWallet, 25f);
-//		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 5f);
-//		block = new Block();
-//		block.addTransaction(transaction1)
-//			 .addTransaction(transaction2)
-//			 .addTransaction(transaction3);
-//		BlockChain.addBlock(block);
-//		
-//		BlockChain.getAllBlocksOfChain().forEach(System.out::println);
-//		
-//		System.out.println( "Jane    Wallet: " + BlockChain.queryBalance(janeWallet));
-//		System.out.println( "John    Wallet: " + BlockChain.queryBalance(johnWallet));
-//		System.out.println( "Genesis Wallet: " + BlockChain.queryBalance(genesisWallet));
-//		
-//		assertEquals("Jane Wallet",80d, BlockChain.queryBalance(janeWallet).doubleValue(),0);
-//		assertEquals("Jonh Wallet",255d, BlockChain.queryBalance(johnWallet).doubleValue(),0);
-//		assertEquals("Genesis Wallet",665d, BlockChain.queryBalance(genesisWallet).doubleValue(),0);
-//	}
+	@Test
+	public void testBlockChainSingleBlock() {
+		
+		Wallet janeWallet    = WalletImpl.build("jane");
+		Wallet johnWallet    = WalletImpl.build("john");
+		
+		
+		Block block = new Block();
+		Transaction transaction0 = genesisWallet.sendMoney(janeWallet, 50f);
+		Transaction transaction1 = genesisWallet.sendMoney(johnWallet, 10f);
+		Transaction transaction2 = johnWallet.sendMoney(janeWallet, 5f);
+		Transaction transaction3 = janeWallet.sendMoney(johnWallet, 7f);
+		block
+		 .addTransaction(transaction0)
+		 .addTransaction(transaction1)
+		 .addTransaction(transaction2)
+		 .addTransaction(transaction3);
+		BlockChain.addBlock(block);
+		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
+		
+		
+		double janeWalletBalance    = BlockChain.queryBalance(janeWallet).doubleValue();
+		double johnWalletBalance    = BlockChain.queryBalance(johnWallet).doubleValue();
+		double genesisWalletBalance = BlockChain.queryBalance(genesisWallet).doubleValue();
+		
+		assertEquals("Jane Wallet",48d, janeWalletBalance,0);
+		assertEquals("Jonh Wallet",12d, johnWalletBalance,0);
+		assertEquals("Genesis Wallet",940d, genesisWalletBalance,0);
+		assertEquals("Total Balance BlockChain",1000d, (janeWalletBalance+johnWalletBalance+genesisWalletBalance),0);
+		
+		if ( log.isDebugEnabled() ) {
+			System.out.println(" *** BLOCKs at testBlockChainSingleBlock");
+			BlockChain.getAllBlocksOfChain().forEach(System.out::println);
+			System.out.println("");
+		}
+	}
 }
