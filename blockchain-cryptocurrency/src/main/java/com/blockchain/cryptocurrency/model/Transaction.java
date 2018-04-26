@@ -37,6 +37,7 @@ public class Transaction {
 	// Wallets of the Transaction
 	@Getter private Wallet sender;
 	@Getter private Wallet recipient;
+	private String nonce;
 
 	private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
 	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
@@ -96,13 +97,14 @@ public class Transaction {
 	}
 
 	private String calculateTransactionHash() {
-		String uuidTransaction = UUID.randomUUID().toString();
+		String nonce = UUID.randomUUID().toString();
+		this.setNonce(nonce);
 		
 		return CryptoHashUtils.applySHA256(
 			   CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
 			   CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
-			   this.value.toString() + 
-			   uuidTransaction
+			   String.valueOf(this.value.floatValue()) + 
+			   nonce
 		);
 	}
 	

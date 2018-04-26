@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,12 +15,15 @@ import com.blockchain.cryptocurrency.model.Wallet;
 import com.blockchain.cryptocurrency.model.WalletImpl;
 import com.blockchain.utils.CryptoHashUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * This is the Global Ledger, the BlockChain of Coins
  * 
- * @author Ualter
+ * @author Ualter Junior
  *
  */
+@Slf4j
 public class BlockChain {
 
 	// Unspent Transaction Output, UTXO https://bitcoin.org/en/glossary/unspent-transaction-output)
@@ -133,43 +135,47 @@ public class BlockChain {
 		block.startMining();
 		// Set its position on the chain
 		block.setHeight(BLOCKCHAIN.size()+1);
+		// Calculate the Merkle Root of the Block
+		block.calculateMerkleRoot();
 		// Join the Block to the Chain 
 		BLOCKCHAIN.add(block);
 		// Inform to set the former last Block which are the next now in the chain 
 		previousBlock.setNextBlock(block.getHash());
-		// Calculate the Merkle Root of the BlockChain
-		List<String> hashsOfAllBlocks = BlockChain.getAllBlocksOfChain().map(b -> b.getHash()).collect(Collectors.toList());
-		String merkleRoot = CryptoHashUtils.MerkleRoot.calculateMerkleRoot(hashsOfAllBlocks);
-		BLOCKCHAIN.stream().forEach(b -> b.setMerkleRoot(merkleRoot));  // For now, set to all of them, I do not know yet if just the last of the tree is enough
 	}
 
 	public static Stream<Block> getAllBlocksOfChain() {
 		return BLOCKCHAIN.stream();
 	}
 	
-	public static boolean validateChain(Stream<Block> streamOfBlocks) {
-		return validateChain(streamOfBlocks.collect(Collectors.toList()));
-	}
-	public static boolean validateChain(List<Block> blocks) {
-		StringBuilder feed;
-		for (Block block : blocks) {
+	/**
+	 * Check the integrity of this block, verifying that its Merkle Root value is valid
+	 * @param block
+	 * @return
+	 */
+	
+	public static boolean validateBlock(Block block) {
+		List<String> listHash = new ArrayList<String>();
+		
+		// Recalculate the Transactions Hash (if the values were not changed, the Hash would be exactly the same - integrity)
+		for(Transaction t : block.getTransactions()) {
+			String hashTransaction = CryptoHashUtils.applySHA256(
+					   CryptoHashUtils.encodeBase64(t.getSenderPublicKey()) + 
+					   CryptoHashUtils.encodeBase64(t.getRecipientPublickey()) +
+					   String.valueOf(t.getValue().floatValue()) + 
+					   t.getNonce());
+			listHash.add(hashTransaction);
 			
-			double data = block.getTransactions().stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
-			
-			feed = new StringBuilder();
-			feed.append(String.valueOf(data))
-			  .append(Long.toString(block.getTimeStamp()))
-			  .append(block.getPreviousBlock())
-			  .append(String.valueOf(block.getNonce().intValue()));
-			
-			String hashResulting = CryptoHashUtils.applySHA256(feed.toString());
-			
-			if ( !hashResulting.equals( block.getHash() ) ) {
-				return false;
-			}
-			
+			System.out.println(t.getHash() + " --- " + hashTransaction);
 		}
-		return true;
+		
+		String merkleRootOriginal     = block.getMerkleRoot(); 
+		String merkleRootRecalculated = CryptoHashUtils.MerkleRoot.calculateMerkleRoot(listHash);
+		if ( log.isDebugEnabled() ) {
+			System.out.println("MerkleRoot(Original).................:" + merkleRootOriginal);
+			System.out.println("MerkleRoot(Recalculated).............:" + merkleRootRecalculated);
+			System.out.println(StringUtils.repeat("*", 102));
+		}
+		return merkleRootOriginal.equals(merkleRootRecalculated);
 	}
 	
 }

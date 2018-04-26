@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -32,6 +33,17 @@ public class Block extends AbstractBlock {
 		}
 		double totalTransaction = transactions.stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
 		super.startMining(String.valueOf(totalTransaction), BlockChain.DIFFICULTY);
+	}
+	
+	public void calculateMerkleRoot() {
+		if ( StringUtils.isNotBlank(this.getMerkleRoot()) ) {
+			throw new RuntimeException("The Merkle root it was already calculated for this Block");
+		}
+		if (transactions == null || transactions.size() == 0) {
+			throw new RuntimeException("There's no transaction in this Block to calculate the Merkle Root");
+		}
+		List<String> hashs = this.transactions.stream().map(t -> t.getHash()).collect(Collectors.toList());
+		super.calculateMerkleRoot(hashs);
 	}
 	
 	@Override

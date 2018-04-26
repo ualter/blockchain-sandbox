@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -19,7 +17,6 @@ import com.blockchain.cryptocurrency.model.Wallet;
 import com.blockchain.cryptocurrency.model.WalletImpl;
 import com.blockchain.cryptocurrency.pavo.Block;
 import com.blockchain.cryptocurrency.pavo.BlockChain;
-import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,7 +58,10 @@ public class BlockChainTest {
 			 .addTransaction(transaction7)
 			 ;
 		BlockChain.addBlock(block);
-		assertNotNull("Merkle Root is Null?",block.getMerkleRoot());
+		String blockMerkleRoot = block.getMerkleRoot();
+		assertNotNull("Merkle Root is Null?",blockMerkleRoot);
+		assertEquals("Block is valid? (MerkleRoot value is OK?)", true, BlockChain.validateBlock(block));
+		
 		
 		
 		double janeWalletBalance    = BlockChain.queryBalance(janeWallet).doubleValue();
@@ -100,21 +100,14 @@ public class BlockChainTest {
 			System.out.println("");
 		}
 		
-		// Testing Integrity of the BlockChain (Positive)
-		boolean isValidChain = BlockChain.validateChain(BlockChain.getAllBlocksOfChain());
-		assertEquals("A valid BlockChain",true, isValidChain);
+		blockMerkleRoot = block.getMerkleRoot();
+		assertNotNull("Merkle Root is Null?",blockMerkleRoot);
+		assertEquals("Block is valid? (MerkleRoot value is OK?)", true, BlockChain.validateBlock(block));
 		
-		// Testing Integrity of the BlockChain (Negative, tampering the value of the one Block, the second Block with the value of 50f)
-		block = BlockChain.getAllBlocksOfChain().skip(1).findFirst().get();
-		block.getTransactions().get(0).setValue(new BigDecimal(4764)); // change the value of the Transaction from 50 to whatever different
-		isValidChain = BlockChain.validateChain(BlockChain.getAllBlocksOfChain());
-		assertEquals("A Not valid BlockChain",false, isValidChain);
-		
-		// Testing Integrity of the BlockChain (Positive, back to original, the value of the one Block, the second Block with the value of 50f)
-		block = BlockChain.getAllBlocksOfChain().skip(1).findFirst().get();
-		block.getTransactions().get(0).setValue(new BigDecimal(50));
-		isValidChain = BlockChain.validateChain(BlockChain.getAllBlocksOfChain());
-		assertEquals("A Not valid BlockChain",true, isValidChain);
+		// Testing Integrity of the Block (Negative), change the value of one Transaction without re-calculate the MerkleRoot)
+		// Change the value of the Transaction from 25 to whatever different
+		block.getTransactions().stream().skip(1).skip(1).findFirst().get().setValue(new BigDecimal(44));
+		assertEquals("Block is valid? (MerkleRoot value is OK?) In this case it shouldn't", false, BlockChain.validateBlock(block));
 	}
 
 	@Test
@@ -154,46 +147,18 @@ public class BlockChainTest {
 		}
 
 		// Testing Integrity of the BlockChain (Positive)
-		boolean isValidChain = BlockChain.validateChain(BlockChain.getAllBlocksOfChain());
-		assertEquals("A valid BlockChain",true, isValidChain);
-		
-		// Testing Integrity of the BlockChain (Negative, tampering the value of the one Block, the second Block with the value of 50f)
-		block = BlockChain.getAllBlocksOfChain().skip(1).findFirst().get();
-		block.getTransactions().get(0).setValue(new BigDecimal(4764)); // change the value of the Transaction from 50 to whatever different
-		isValidChain = BlockChain.validateChain(BlockChain.getAllBlocksOfChain());
-		assertEquals("A Not valid BlockChain",false, isValidChain);
-		
-		// Testing Integrity of the BlockChain (Positive, back to original, the value of the one Block, the second Block with the value of 50f)
-		block = BlockChain.getAllBlocksOfChain().skip(1).findFirst().get();
-		block.getTransactions().get(0).setValue(new BigDecimal(50));
-		isValidChain = BlockChain.validateChain(BlockChain.getAllBlocksOfChain());
-		assertEquals("A Not valid BlockChain",true, isValidChain);
+		String blockMerkleRoot = block.getMerkleRoot();
+		assertNotNull("Merkle Root is Null?",blockMerkleRoot);
+		assertEquals("A valid BlockChain",true, BlockChain.validateBlock(block));
 		
 		
-		// Testing Merkle Root (Last Test) 
-		Block lastBlock = BlockChain.getAllBlocksOfChain().skip(BlockChain.getAllBlocksOfChain().count() - 1).findFirst().get();
-		// Recalculating the Merkle Root 
-		List<String> hashsOfAllBlocks = BlockChain.getAllBlocksOfChain().map(b -> b.getHash()).collect(Collectors.toList());
-		String merkleRoot = CryptoHashUtils.MerkleRoot.calculateMerkleRoot( hashsOfAllBlocks );
-		// Should be equals, integrity OK
-		if ( log.isDebugEnabled() ) {
-			System.out.println("MerkleRoot...........................:" + lastBlock.getMerkleRoot());
-			System.out.println("MerkleRoot(Recalculated).............:" + merkleRoot);
-		}
-		assertEquals("A Valid MerkleRoot",true,lastBlock.getMerkleRoot().equals(merkleRoot));
+		// Testing Integrity of the BlockChain (Negative, tampering the value of one Transaction, the second one with the value of 50f)
+		// change the value of the Transaction from 10 to whatever different
+		block.getTransactions().stream().skip(1).findFirst().get().setValue(new BigDecimal(4764));
+		assertEquals("A Not valid BlockChain",false, BlockChain.validateBlock(block));
 		
-		// Chaging the Second Block Hash
-		Block secondBlock = BlockChain.getAllBlocksOfChain().skip(1).findFirst().get();
-		secondBlock.setHash("516d5112ea33783f1b8fc40b2e4b2");
-		// Recalculating the Merkle Root
-		hashsOfAllBlocks = BlockChain.getAllBlocksOfChain().map(b -> b.getHash()).collect(Collectors.toList());
-		merkleRoot = CryptoHashUtils.MerkleRoot.calculateMerkleRoot( hashsOfAllBlocks );
-		// Should NOT be equals, integrity NOT OK
-		if ( log.isDebugEnabled() ) {
-			System.out.println("MerkleRoot...........................:" + lastBlock.getMerkleRoot());
-			System.out.println("MerkleRoot(Tampered and Recalculated):" + merkleRoot);
-		}
-		assertEquals("A NOT Valid MerkleRoot",false,lastBlock.getMerkleRoot().equals(merkleRoot));
-		
+		// Testing Integrity of the BlockChain (Positive, back to original (10), the value of the Transaction changed before)
+		block.getTransactions().stream().skip(1).findFirst().get().setValue(new BigDecimal(10));
+		assertEquals("A Not valid BlockChain",true, BlockChain.validateBlock(block));
 	}
 }
