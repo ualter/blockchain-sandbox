@@ -164,8 +164,6 @@ public class BlockChain {
 					   String.valueOf(t.getValue().floatValue()) + 
 					   t.getNonce());
 			listHash.add(hashTransaction);
-			
-			System.out.println(t.getHash() + " --- " + hashTransaction);
 		}
 		
 		String merkleRootOriginal     = block.getMerkleRoot(); 
