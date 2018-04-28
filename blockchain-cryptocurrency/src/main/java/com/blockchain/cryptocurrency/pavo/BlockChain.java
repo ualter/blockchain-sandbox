@@ -171,7 +171,7 @@ public class BlockChain {
 		BLOCKCHAIN.forEach(block -> {
 			StringBuffer blockToString = new StringBuffer();
 			
-			String genesis = block.getHeight() == 0 ? "  ► genesis ◄" : "";
+			String genesis = block.getHeight() == 0 ? "  ► genesis ◄" : " of " + df4.format(BLOCKCHAIN.size() - 1);
 			
 			int longitude = 83;
 			blockToString.append("╔").append(StringUtils.repeat("═",longitude+8)).append("╗").append("\n");
@@ -195,7 +195,7 @@ public class BlockChain {
 				builder.append("   Sender..: " + StringUtils.rightPad(transaction.getSender().getOwner(),8));
 				builder.append("→ Recipient..: " + StringUtils.rightPad(transaction.getRecipient().getOwner(),8));
 				
-				blockToString.append("\n║    #").append(df4.format(counterTransaction.get()));
+				blockToString.append("\n║    #").append(df4.format(counterTransaction.get() + 1));
 				if ( counterTransaction.incrementAndGet() == block.getTransactions().size() ) {
 					blockToString.append("├").append("─► ").append(builder.toString()).append(StringUtils.repeat(" ", builder.length() - longitudeTransction-4)).append("║");
 				} else { 
@@ -220,8 +220,8 @@ public class BlockChain {
 				transaction.getOutputs().forEach(outputs -> {
 					StringBuilder line = new StringBuilder();
 					line.append("\n║         │             - ");
-					line.append(StringUtils.rightPad(formatter.format(outputs.getValue().floatValue()),9)).append("  TO  ");
-					line.append(StringUtils.leftPad(outputs.getRecipient().getOwner(), 10));
+					line.append(StringUtils.leftPad(formatter.format(outputs.getValue().floatValue()),9)).append("  TO  ");
+					line.append(StringUtils.rightPad(outputs.getRecipient().getOwner(), 10));
 					
 					blockToString.append(line.toString()).append(StringUtils.repeat(" ", line.length() - 11)).append("║");
 				});

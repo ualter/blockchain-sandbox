@@ -162,5 +162,7 @@ public class BlockChainTest {
 		// Testing Integrity of the BlockChain (Positive, back to original (10), the value of the Transaction changed before)
 		block.getTransactions().stream().skip(1).findFirst().get().setValue(new BigDecimal(10));
 		assertEquals("A Not valid BlockChain",true, BlockChain.validateBlock(block));
+		
+		BlockChain.printBlockChain(System.out);
 	}
 }
