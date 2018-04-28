@@ -46,7 +46,7 @@ public class WalletImpl implements Wallet {
 	 */
 	private WalletImpl(String walletOwner) {
 	    if ( StringUtils.isBlank(walletOwner) ) {
-	    	this.owner    = "anonymous";
+	    	this.owner    = "genesis";
 			this.keyPairs = KeyPairs.generate();
 		} else {
 			this.owner    = walletOwner;

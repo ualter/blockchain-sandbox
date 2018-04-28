@@ -1,13 +1,19 @@
 package com.blockchain.cryptocurrency.pavo;
 
+import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.test.rule.OutputCapture;
 
 import com.blockchain.cryptocurrency.model.Transaction;
 import com.blockchain.cryptocurrency.model.TransactionOutput;
@@ -36,18 +42,19 @@ public class BlockChain {
 	 * The Big Ban
 	 * @return
 	 */
-	public static Wallet initBlockChain() {
+	public static Wallet bigBan() {
+		BLOCKCHAIN           = new ArrayList<Block>();
 		Wallet genesitWallet = WalletImpl.build();
-		Block genesisBlock = createGenesisBlock(genesitWallet);
+		Block genesisBlock   = createGenesisBlock(genesitWallet);
 		genesisBlock.startMining();
-		genesisBlock.setHeight(1);
+		genesisBlock.setHeight(0);
 		BLOCKCHAIN.add( genesisBlock );
 		return genesitWallet;
 	}
 	private static Block createGenesisBlock(Wallet genesisWallet) {
 		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
 		Transaction genesisTransaction = new Transaction(genesisWallet, genesisWallet, 1000f, null);
-		genesisTransaction.addOutput(genesisTransaction.getRecipient().getPublicKey(), genesisTransaction.getValue());
+		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
 		
 		UTXOs.put(genesisTransaction.getOutputs().get(0).getHash(), genesisTransaction.getOutputs().get(0));
 		
@@ -134,7 +141,7 @@ public class BlockChain {
 		// Calculate its own hash
 		block.startMining();
 		// Set its position on the chain
-		block.setHeight(BLOCKCHAIN.size()+1);
+		block.setHeight(BLOCKCHAIN.size());
 		// Calculate the Merkle Root of the Block
 		block.calculateMerkleRoot();
 		// Join the Block to the Chain 
@@ -145,6 +152,88 @@ public class BlockChain {
 
 	public static Stream<Block> getAllBlocksOfChain() {
 		return BLOCKCHAIN.stream();
+	}
+
+	private static String printBlockChainLineBlock(String value, int longitude) {
+		if ( value == null ) {
+			value = " ";
+		}
+		int    sizeLeft   = longitude - value.length();
+		String fillUp     = StringUtils.repeat(" ", sizeLeft);
+		return value + fillUp + "║\n";
+	}
+	public static void printBlockChain(PrintStream out) {
+		DecimalFormat df4      = new DecimalFormat("0000");
+		DecimalFormat dfNonce  = new DecimalFormat("###,###,#00");
+		NumberFormat formatter = NumberFormat.getCurrencyInstance();
+		SimpleDateFormat sdf   = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+		
+		BLOCKCHAIN.forEach(block -> {
+			StringBuffer blockToString = new StringBuffer();
+			
+			String genesis = block.getHeight() == 0 ? "  ► genesis ◄" : "";
+			
+			int longitude = 83;
+			blockToString.append("╔").append(StringUtils.repeat("═",longitude+8)).append("╗").append("\n");
+			blockToString.append("║ BLOCK #").append(printBlockChainLineBlock(df4.format(block.getHeight()) + genesis, longitude));
+			longitude -= 15;
+			blockToString.append("║       ► Hash........: ").append(printBlockChainLineBlock(block.getHash(), longitude));
+			blockToString.append("║       ► Previous....: ").append(printBlockChainLineBlock(block.getPreviousBlock(), longitude));
+			blockToString.append("║       ► Next........: ").append(printBlockChainLineBlock(block.getNextBlock(), longitude));
+			blockToString.append("║       ► TimeStamp...: ").append(printBlockChainLineBlock(sdf.format(block.getTimeStamp()), longitude));
+			blockToString.append("║       ► Nonce.......: ").append(printBlockChainLineBlock(dfNonce.format(block.getNonce()), longitude));
+			blockToString.append("║       ► Merkle Root.: ").append(printBlockChainLineBlock(block.getMerkleRoot(), longitude));
+			blockToString.append("╟─────────┬").append(StringUtils.repeat("─",longitude+13)).append("╢");
+			
+			AtomicInteger counterTransaction = new AtomicInteger();
+			block.getTransactions().forEach(transaction -> {
+				
+				int longitudeTransction = 68;
+				StringBuilder builder = new StringBuilder();
+				builder.append("TRANSACTION: Value..: ");
+				builder.append(StringUtils.rightPad(formatter.format(transaction.getValue().floatValue()),9));
+				builder.append("   Sender..: " + StringUtils.rightPad(transaction.getSender().getOwner(),8));
+				builder.append("→ Recipient..: " + StringUtils.rightPad(transaction.getRecipient().getOwner(),8));
+				
+				blockToString.append("\n║    #").append(df4.format(counterTransaction.get()));
+				if ( counterTransaction.incrementAndGet() == block.getTransactions().size() ) {
+					blockToString.append("├").append("─► ").append(builder.toString()).append(StringUtils.repeat(" ", builder.length() - longitudeTransction-4)).append("║");
+				} else { 
+					blockToString.append("├").append("─► ").append(builder.toString()).append(StringUtils.repeat(" ", builder.length() - longitudeTransction-4)).append("║");
+				}
+				
+				
+				blockToString.append("\n║         │  INPUTS --→").append(StringUtils.repeat(" ",longitudeTransction+1)).append("║");
+				if ( transaction.getInputs() != null ) {
+					transaction.getInputs().forEach(inputs -> {
+						StringBuilder line = new StringBuilder();
+						line.append("\n║         │             + ");
+						line.append(StringUtils.rightPad(formatter.format(inputs.getUTXO().getValue().floatValue()),9)).append(" FROM ");
+						line.append(StringUtils.leftPad(inputs.getUTXO().getRecipient().getOwner(), 10));
+						
+						blockToString.append(line.toString())
+							.append(StringUtils.repeat(" ", line.length() - 11)).append("║");
+					});
+				}
+				
+				blockToString.append("\n║         │  ←-- OUTPUTS").append(StringUtils.repeat(" ",longitudeTransction)).append("║");
+				transaction.getOutputs().forEach(outputs -> {
+					StringBuilder line = new StringBuilder();
+					line.append("\n║         │             - ");
+					line.append(StringUtils.rightPad(formatter.format(outputs.getValue().floatValue()),9)).append("  TO  ");
+					line.append(StringUtils.leftPad(outputs.getRecipient().getOwner(), 10));
+					
+					blockToString.append(line.toString()).append(StringUtils.repeat(" ", line.length() - 11)).append("║");
+				});
+				
+				if ( counterTransaction.get() != block.getTransactions().size() ) {
+					blockToString.append("\n╟─────────┼──────────────").append(StringUtils.repeat("─", longitudeTransction-1)).append("╢");
+				}
+			});
+			
+			blockToString.append("\n╚═════════╧").append(StringUtils.repeat("═",longitude+13)).append("╝").append("\n");
+			out.println(blockToString.toString());
+		});
 	}
 	
 	/**
@@ -159,8 +248,8 @@ public class BlockChain {
 		// Recalculate the Transactions Hash (if the values were not changed, the Hash would be exactly the same - integrity)
 		for(Transaction t : block.getTransactions()) {
 			String hashTransaction = CryptoHashUtils.applySHA256(
-					   CryptoHashUtils.encodeBase64(t.getSenderPublicKey()) + 
-					   CryptoHashUtils.encodeBase64(t.getRecipientPublickey()) +
+					   CryptoHashUtils.encodeBase64(t.getSender().getPublicKey()) + 
+					   CryptoHashUtils.encodeBase64(t.getRecipient().getPublicKey()) +
 					   String.valueOf(t.getValue().floatValue()) + 
 					   t.getNonce());
 			listHash.add(hashTransaction);

@@ -52,7 +52,6 @@ public abstract class AbstractBlock {
 			);
 		}
 		this.setNonce(_nonce);
-		log.debug("Block: {}, data: {}, nonce: {}", calculatedhash, data, _nonce);
 		this.setHash( calculatedhash );
 	}
 	
@@ -77,7 +76,6 @@ public abstract class AbstractBlock {
 			}
 			merkleRoot = hashs.get(0);
 		}
-		log.debug("Block Merkle Root calculated: {}", merkleRoot);
 		this.setMerkleRoot(merkleRoot);
 	}
 	

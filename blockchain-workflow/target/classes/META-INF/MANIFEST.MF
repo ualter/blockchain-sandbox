@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Implementation-Title: blockchain-workflow
 Implementation-Version: 0.0.1-SNAPSHOT
-Built-By: ujunior
+Built-By: Ualter
 Implementation-Vendor-Id: com.blockchain.workflow
-Build-Jdk: 1.8.0_151
+Build-Jdk: 1.8.0_144
 Implementation-URL: http://projects.spring.io/spring-boot/blockchain-w
  orkflow/
 Created-By: Maven Integration for Eclipse

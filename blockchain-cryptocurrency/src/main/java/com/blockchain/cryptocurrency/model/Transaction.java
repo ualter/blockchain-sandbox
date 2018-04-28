@@ -1,7 +1,7 @@
 package com.blockchain.cryptocurrency.model;
 
 import java.math.BigDecimal;
-import java.security.PublicKey;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,13 +28,9 @@ public class Transaction {
 	private String hash;
 	// Amount of coins sent to the recipient
 	private BigDecimal value;
-	// Sender's public key
-	private PublicKey senderPublicKey;
-	// Receiver's public key
-	private PublicKey recipientPublickey;
 	// To guarantee the integrity and protection of this transaction
 	private byte[] signature;
-	// Wallets of the Transaction
+	// Wallets of the Transaction (Sender and Recipient)
 	@Getter private Wallet sender;
 	@Getter private Wallet recipient;
 	private String nonce;
@@ -46,18 +42,16 @@ public class Transaction {
 		this.sender             = sender;
 		this.recipient          = recipient;
 		this.value              = BigDecimal.valueOf(value);
-		this.senderPublicKey    = sender.getPublicKey();
-		this.recipientPublickey = recipient.getPublicKey();
 		this.inputs             = inputs;
 		this.hash               = this.calculateTransactionHash();
 		this.generateSignature();
 	}
 	
-	public void addOutput(PublicKey recipient, BigDecimal value) {
+	public void addOutput(Wallet recipient, BigDecimal value) {
 		TransactionOutput transactionOutput = new TransactionOutput(recipient, value, this.hash);
 		this.outputs.add(transactionOutput);
 	}
-	public void addOutput(PublicKey recipient, float value) {
+	public void addOutput(Wallet recipient, float value) {
 		this.addOutput(recipient, BigDecimal.valueOf(value));
 	}
 
@@ -84,9 +78,9 @@ public class Transaction {
 		}
 		
 		// Send the coins to the Recipient
-		this.outputs.add(new TransactionOutput(this.recipientPublickey, value, this.hash));
+		this.outputs.add(new TransactionOutput(this.recipient, value, this.hash));
 		// Return the change (the leftOver) back to the Sender
-		this.outputs.add(new TransactionOutput(this.senderPublicKey, BigDecimal.valueOf(leftOver),this.hash));
+		this.outputs.add(new TransactionOutput(this.sender, BigDecimal.valueOf(leftOver),this.hash));
 		
 		// Add the Transactions Output generated in this transaction as Unspent Transaction Output (UTXO), that can be spent as an input in a new transaction
 		BlockChain.addToUTXOs(this);
@@ -101,8 +95,8 @@ public class Transaction {
 		this.setNonce(nonce);
 		
 		return CryptoHashUtils.applySHA256(
-			   CryptoHashUtils.encodeBase64(this.senderPublicKey) + 
-			   CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
+			   CryptoHashUtils.encodeBase64(this.sender.getPublicKey()) + 
+			   CryptoHashUtils.encodeBase64(this.recipient.getPublicKey()) + 
 			   String.valueOf(this.value.floatValue()) + 
 			   nonce
 		);
@@ -126,11 +120,11 @@ public class Transaction {
 	 */
 	private boolean checkSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.senderPublicKey) +
-				      CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
+		String data = CryptoHashUtils.encodeBase64(this.sender.getPublicKey()) +
+				      CryptoHashUtils.encodeBase64(this.recipient.getPublicKey()) + 
 				      this.value.toString();
 		//@formatter:on
-		return CryptoHashUtils.verifySignature(senderPublicKey, data, signature);
+		return CryptoHashUtils.verifySignature(sender.getPublicKey(), data, signature);
 	}
 	
 	/**
@@ -139,8 +133,8 @@ public class Transaction {
 	 */
 	private void generateSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.senderPublicKey) +
-				      CryptoHashUtils.encodeBase64(this.recipientPublickey) + 
+		String data = CryptoHashUtils.encodeBase64(this.sender.getPublicKey()) +
+				      CryptoHashUtils.encodeBase64(this.recipient.getPublicKey()) + 
 				      this.value.toString();
 		//@formatter:on
 		this.signature = CryptoHashUtils.sign(this.sender.getPrivateKey(), data);
@@ -148,17 +142,20 @@ public class Transaction {
 
 	@Override
 	public String toString() {
+		NumberFormat formatter = NumberFormat.getCurrencyInstance();
 		StringBuilder builder = new StringBuilder();
-		builder.append("Transaction [value=");
-		builder.append(value);
-		builder.append(", Sender=" + this.sender.getOwner());
-		builder.append(", Recipient=" + this.recipient.getOwner());
-		builder.append(", inputs=");
+		builder.append("Transaction  value=");
+		builder.append(StringUtils.leftPad(formatter.format(value.floatValue()),11));
+		builder.append("│ Sender=" + StringUtils.rightPad(this.sender.getOwner(),10));
+		builder.append("│ Recipient=" + StringUtils.rightPad(this.recipient.getOwner(),10));
+		builder.append("│ inputs=");
 		builder.append(inputs);
-		builder.append(", outputs=");
+		builder.append("│ outputs=");
 		builder.append(outputs);
 		builder.append("]");
 		return builder.toString();
+		
+		
 	}
 	
 	

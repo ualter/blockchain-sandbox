@@ -48,6 +48,7 @@ public class Block extends AbstractBlock {
 	
 	@Override
 	public String toString() {
+		String genesis = this.getPreviousBlock().equals( StringUtils.repeat("0", BlockChain.DIFFICULTY) ) ? " *genesis" : "";
 		DecimalFormat df = new DecimalFormat("0000");
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		double total = transactions.stream().mapToDouble(d -> d.getValue().doubleValue()).sum();
@@ -60,7 +61,7 @@ public class Block extends AbstractBlock {
 				,StringUtils.rightPad(formatter.format(getTimeStamp()),22)
 				,StringUtils.leftPad(String.valueOf(totalRegister), 4)
 				,StringUtils.leftPad(String.valueOf(total), 12)
-				,StringUtils.rightPad(String.valueOf(getNonce()),5));
+				,StringUtils.rightPad(String.valueOf(getNonce()),5)) + genesis;
 	}
 
 

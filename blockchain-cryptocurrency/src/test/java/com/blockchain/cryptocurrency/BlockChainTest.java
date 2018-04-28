@@ -29,7 +29,7 @@ public class BlockChainTest {
 	
 	@Before
 	public void createTheWorld() {
-		genesisWallet = BlockChain.initBlockChain();
+		genesisWallet = BlockChain.bigBan();
 	}
 	
 	@Test
@@ -61,7 +61,6 @@ public class BlockChainTest {
 		String blockMerkleRoot = block.getMerkleRoot();
 		assertNotNull("Merkle Root is Null?",blockMerkleRoot);
 		assertEquals("Block is valid? (MerkleRoot value is OK?)", true, BlockChain.validateBlock(block));
-		
 		
 		
 		double janeWalletBalance    = BlockChain.queryBalance(janeWallet).doubleValue();
@@ -108,6 +107,9 @@ public class BlockChainTest {
 		// Change the value of the Transaction from 25 to whatever different
 		block.getTransactions().stream().skip(1).skip(1).findFirst().get().setValue(new BigDecimal(44));
 		assertEquals("Block is valid? (MerkleRoot value is OK?) In this case it shouldn't", false, BlockChain.validateBlock(block));
+		
+		
+		BlockChain.printBlockChain(System.out);
 	}
 
 	@Test

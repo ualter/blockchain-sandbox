@@ -19,4 +19,10 @@ public class TransactionInput {
 		this.hash = hash;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("TransactionInput [hash=%s, UTXO=%s]", hash, UTXO);
+	}
+
+	
 }
