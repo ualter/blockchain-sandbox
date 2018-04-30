@@ -27,12 +27,12 @@ public class CurrencyBlock extends AbstractBlock {
 		return this;
 	}
 	
-	public void startMining() {
+	public void calculateHashBlock() {
 		if (transactions == null || transactions.size() == 0) {
 			throw new RuntimeException("There's no transaction in this Block to be added to the BlockChain");
 		}
 		double totalTransaction = transactions.stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
-		super.startMining(String.valueOf(totalTransaction), CurrencyBlockChain.DIFFICULTY);
+		super.calculateHashBlock(String.valueOf(totalTransaction), CurrencyBlockChain.DIFFICULTY);
 	}
 	
 	public void calculateMerkleRoot() {

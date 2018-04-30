@@ -45,7 +45,7 @@ public class CurrencyBlockChain {
 		BLOCKCHAIN           = new ArrayList<CurrencyBlock>();
 		Wallet genesitWallet = WalletImpl.build();
 		CurrencyBlock genesisBlock   = createGenesisBlock(genesitWallet);
-		genesisBlock.startMining();
+		genesisBlock.calculateHashBlock();
 		genesisBlock.setHeight(0);
 		BLOCKCHAIN.add( genesisBlock );
 		return genesitWallet;
@@ -138,7 +138,7 @@ public class CurrencyBlockChain {
 		CurrencyBlock previousBlock = BLOCKCHAIN.get(BLOCKCHAIN.size() - 1);
 		block.setPreviousBlock( previousBlock.getHash() );
 		// Calculate its own hash
-		block.startMining();
+		block.calculateHashBlock();
 		// Set its position on the chain
 		block.setHeight(BLOCKCHAIN.size());
 		// Calculate the Merkle Root of the Block
