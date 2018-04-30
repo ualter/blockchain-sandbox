@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency.pavo.app;
+package com.blockchain.cryptocurrency.app;
 
 public class PavoChainApplication {
 	

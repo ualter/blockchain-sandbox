@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency.pavo;
+package com.blockchain.cryptocurrency;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -14,15 +14,15 @@ import com.blockchain.cryptocurrency.model.Transaction;
 
 import lombok.Getter;
 
-public class Block extends AbstractBlock {
+public class CurrencyBlock extends AbstractBlock {
 	
 	@Getter private List<Transaction> transactions = new ArrayList<Transaction>();
 	
-	public Block() {
+	public CurrencyBlock() {
 		this.setTimeStamp(Instant.now().toEpochMilli());
 	}
 	
-	public Block addTransaction(Transaction transaction) {
+	public CurrencyBlock addTransaction(Transaction transaction) {
 		this.transactions.add(transaction);
 		return this;
 	}
@@ -32,7 +32,7 @@ public class Block extends AbstractBlock {
 			throw new RuntimeException("There's no transaction in this Block to be added to the BlockChain");
 		}
 		double totalTransaction = transactions.stream().mapToDouble(t -> t.getValue().doubleValue()).sum();
-		super.startMining(String.valueOf(totalTransaction), BlockChain.DIFFICULTY);
+		super.startMining(String.valueOf(totalTransaction), CurrencyBlockChain.DIFFICULTY);
 	}
 	
 	public void calculateMerkleRoot() {
@@ -48,7 +48,7 @@ public class Block extends AbstractBlock {
 	
 	@Override
 	public String toString() {
-		String genesis = this.getPreviousBlock().equals( StringUtils.repeat("0", BlockChain.DIFFICULTY) ) ? " *genesis" : "";
+		String genesis = this.getPreviousBlock().equals( StringUtils.repeat("0", CurrencyBlockChain.DIFFICULTY) ) ? " *genesis" : "";
 		DecimalFormat df = new DecimalFormat("0000");
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		double total = transactions.stream().mapToDouble(d -> d.getValue().doubleValue()).sum();

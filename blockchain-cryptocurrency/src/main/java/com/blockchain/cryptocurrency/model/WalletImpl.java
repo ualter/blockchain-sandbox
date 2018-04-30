@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.blockchain.cryptocurrency.pavo.BlockChain;
+import com.blockchain.cryptocurrency.CurrencyBlockChain;
 import com.blockchain.utils.CryptoHashUtils;
 import com.blockchain.utils.KeyPairs;
 
@@ -74,7 +74,7 @@ public class WalletImpl implements Wallet {
 	}
 	
 	public BigDecimal requestBalance() {
-		return BlockChain.requestBalance( this );
+		return CurrencyBlockChain.requestBalance( this );
 	}
 	
 	@Override

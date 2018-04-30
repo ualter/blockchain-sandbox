@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.blockchain.cryptocurrency.pavo.BlockChain;
+import com.blockchain.cryptocurrency.CurrencyBlockChain;
 import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.Data;
@@ -62,12 +62,12 @@ public class Transaction {
 		}
 
 		// Check the transaction inputs, verifying that they were not spent and, use it so... otherwise discard it
-		BlockChain.validateTransactionInputWithUTXOs(this);
+		CurrencyBlockChain.validateTransactionInputWithUTXOs(this);
 		
 		// Checks the value of transaction
 		float totalTransaction = processTotalTransaction(); 
-		if (  totalTransaction < BlockChain.MINIMUM_TRANSACTION ) {
-			log.warn("Total of Transaction is too small: {}, the minimum amount allowed is:{}", totalTransaction, BlockChain.MINIMUM_TRANSACTION);
+		if (  totalTransaction < CurrencyBlockChain.MINIMUM_TRANSACTION ) {
+			log.warn("Total of Transaction is too small: {}, the minimum amount allowed is:{}", totalTransaction, CurrencyBlockChain.MINIMUM_TRANSACTION);
 			return false;
 		}
 		
@@ -83,9 +83,9 @@ public class Transaction {
 		this.outputs.add(new TransactionOutput(this.sender, BigDecimal.valueOf(leftOver),this.hash));
 		
 		// Add the Transactions Output generated in this transaction as Unspent Transaction Output (UTXO), that can be spent as an input in a new transaction
-		BlockChain.addToUTXOs(this);
+		CurrencyBlockChain.addToUTXOs(this);
 		// Remove the Transactions Input from the UTXOs (they cannot be used anymore, as they were already spent)
-		BlockChain.removeFromUTXOs(this);
+		CurrencyBlockChain.removeFromUTXOs(this);
 		
 		return true;
 	}

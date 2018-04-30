@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency.pavo;
+package com.blockchain.cryptocurrency;
 
 import java.io.PrintStream;
 import java.math.BigDecimal;
@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.boot.test.rule.OutputCapture;
 
 import com.blockchain.cryptocurrency.model.Transaction;
 import com.blockchain.cryptocurrency.model.TransactionOutput;
@@ -30,10 +29,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
-public class BlockChain {
+public class CurrencyBlockChain {
 
 	// Unspent Transaction Output, UTXO https://bitcoin.org/en/glossary/unspent-transaction-output)
-	private static List<Block>                   BLOCKCHAIN          = new ArrayList<Block>();
+	private static List<CurrencyBlock>                   BLOCKCHAIN          = new ArrayList<CurrencyBlock>();
 	private static Map<String,TransactionOutput> UTXOs               = new HashMap<String,TransactionOutput>(); 
 	public static float                          MINIMUM_TRANSACTION = 5;
 	public static int                            DIFFICULTY          = 3;
@@ -43,22 +42,22 @@ public class BlockChain {
 	 * @return
 	 */
 	public static Wallet bigBan() {
-		BLOCKCHAIN           = new ArrayList<Block>();
+		BLOCKCHAIN           = new ArrayList<CurrencyBlock>();
 		Wallet genesitWallet = WalletImpl.build();
-		Block genesisBlock   = createGenesisBlock(genesitWallet);
+		CurrencyBlock genesisBlock   = createGenesisBlock(genesitWallet);
 		genesisBlock.startMining();
 		genesisBlock.setHeight(0);
 		BLOCKCHAIN.add( genesisBlock );
 		return genesitWallet;
 	}
-	private static Block createGenesisBlock(Wallet genesisWallet) {
+	private static CurrencyBlock createGenesisBlock(Wallet genesisWallet) {
 		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
 		Transaction genesisTransaction = new Transaction(genesisWallet, genesisWallet, 1000f, null);
 		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
 		
 		UTXOs.put(genesisTransaction.getOutputs().get(0).getHash(), genesisTransaction.getOutputs().get(0));
 		
-		Block genesisBlock = new Block();
+		CurrencyBlock genesisBlock = new CurrencyBlock();
 		genesisBlock.setPreviousBlock(genesisHash);
 		genesisBlock.getTransactions().add(genesisTransaction);
 		return genesisBlock;
@@ -129,14 +128,14 @@ public class BlockChain {
 	}
 	
 	
-	public static void addBlock(Block block) {
+	public static void addBlock(CurrencyBlock block) {
 		// The BlockChain must be started, the "Genesis" Transaction must appear before
 		if ( BLOCKCHAIN.isEmpty() ) {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
 		
 		// Get the previous block hash to set this one with it
-		Block previousBlock = BLOCKCHAIN.get(BLOCKCHAIN.size() - 1);
+		CurrencyBlock previousBlock = BLOCKCHAIN.get(BLOCKCHAIN.size() - 1);
 		block.setPreviousBlock( previousBlock.getHash() );
 		// Calculate its own hash
 		block.startMining();
@@ -150,7 +149,7 @@ public class BlockChain {
 		previousBlock.setNextBlock(block.getHash());
 	}
 
-	public static Stream<Block> getAllBlocksOfChain() {
+	public static Stream<CurrencyBlock> getAllBlocksOfChain() {
 		return BLOCKCHAIN.stream();
 	}
 
@@ -189,41 +188,49 @@ public class BlockChain {
 			block.getTransactions().forEach(transaction -> {
 				
 				int longitudeTransction = 68;
-				StringBuilder builder = new StringBuilder();
-				builder.append("TRANSACTION: Value..: ");
-				builder.append(StringUtils.rightPad(formatter.format(transaction.getValue().floatValue()),9));
-				builder.append("   Sender..: " + StringUtils.rightPad(transaction.getSender().getOwner(),8));
-				builder.append("→ Recipient..: " + StringUtils.rightPad(transaction.getRecipient().getOwner(),8));
-				
-				blockToString.append("\n║    #").append(df4.format(counterTransaction.get() + 1));
+				StringBuilder transactionLine = new StringBuilder();
+				transactionLine.append("\n║    #").append(df4.format(counterTransaction.get() + 1));
 				if ( counterTransaction.incrementAndGet() == block.getTransactions().size() ) {
-					blockToString.append("├").append("─► ").append(builder.toString()).append(StringUtils.repeat(" ", builder.length() - longitudeTransction-4)).append("║");
+					transactionLine.append("├").append("─► ");
 				} else { 
-					blockToString.append("├").append("─► ").append(builder.toString()).append(StringUtils.repeat(" ", builder.length() - longitudeTransction-4)).append("║");
+					transactionLine.append("├").append("─► ");
 				}
+				transactionLine.append("TRANSACTION: Value..: ");
+				transactionLine.append(StringUtils.leftPad(formatter.format(transaction.getValue().floatValue()),11));
+				transactionLine.append("   Sender..: " + StringUtils.rightPad(transaction.getSender().getOwner(),7));
+				transactionLine.append(" → Recipient..: " + StringUtils.rightPad(transaction.getRecipient().getOwner(),7));
+				
+				//blockToString.append("\n║    #").append(df4.format(counterTransaction.get() + 1));
+//				if ( counterTransaction.incrementAndGet() == block.getTransactions().size() ) {
+//					blockToString.append("├").append("─► ").append(transactionLine.toString());
+//				} else { 
+//					blockToString.append("├").append("─► ").append(transactionLine.toString());
+//				}
+				blockToString.append(transactionLine.toString());
+				blockToString.append(StringUtils.repeat(" ",(transactionLine.length()) - (longitudeTransction+21))).append("║");
 				
 				
-				blockToString.append("\n║         │  INPUTS --→").append(StringUtils.repeat(" ",longitudeTransction+1)).append("║");
+				blockToString.append("\n║         │   INPUTS --→").append(StringUtils.repeat(" ",longitudeTransction)).append("║");
 				if ( transaction.getInputs() != null ) {
 					transaction.getInputs().forEach(inputs -> {
 						StringBuilder line = new StringBuilder();
 						line.append("\n║         │             + ");
-						line.append(StringUtils.rightPad(formatter.format(inputs.getUTXO().getValue().floatValue()),9)).append(" FROM ");
-						line.append(StringUtils.leftPad(inputs.getUTXO().getRecipient().getOwner(), 10));
+						line.append(StringUtils.leftPad(formatter.format(inputs.getUTXO().getValue().floatValue()),10)).append(" FROM ");
+						line.append(StringUtils.rightPad(inputs.getUTXO().getRecipient().getOwner(), 10));
 						
 						blockToString.append(line.toString())
-							.append(StringUtils.repeat(" ", line.length() - 11)).append("║");
+							.append(StringUtils.repeat(" ", line.length() - 13)).append("║");
 					});
 				}
 				
-				blockToString.append("\n║         │  ←-- OUTPUTS").append(StringUtils.repeat(" ",longitudeTransction)).append("║");
+				blockToString.append("\n║         │   ←-- OUTPUTS").append(StringUtils.repeat(" ",longitudeTransction-1)).append("║");
 				transaction.getOutputs().forEach(outputs -> {
 					StringBuilder line = new StringBuilder();
 					line.append("\n║         │             - ");
-					line.append(StringUtils.leftPad(formatter.format(outputs.getValue().floatValue()),9)).append("  TO  ");
+					line.append(StringUtils.leftPad(formatter.format(outputs.getValue().floatValue()),10)).append(" TO   ");
 					line.append(StringUtils.rightPad(outputs.getRecipient().getOwner(), 10));
 					
-					blockToString.append(line.toString()).append(StringUtils.repeat(" ", line.length() - 11)).append("║");
+					blockToString.append(line.toString()).append(StringUtils.repeat(" ", line.length() - 13)).append("║");
 				});
 				
 				if ( counterTransaction.get() != block.getTransactions().size() ) {
@@ -242,7 +249,7 @@ public class BlockChain {
 	 * @return
 	 */
 	
-	public static boolean validateBlock(Block block) {
+	public static boolean validateBlock(CurrencyBlock block) {
 		List<String> listHash = new ArrayList<String>();
 		
 		// Recalculate the Transactions Hash (if the values were not changed, the Hash would be exactly the same - integrity)

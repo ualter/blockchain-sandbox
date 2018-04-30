@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency.pavo.app;
+package com.blockchain.cryptocurrency.app;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
