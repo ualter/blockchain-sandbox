@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("unused")
 public class CryptoHashUtils {
 
-	public static String encodeBase64(Key key) {
+/*	public static String encodeBase64(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
 
@@ -66,14 +66,14 @@ public class CryptoHashUtils {
 		}
 	}
 	
-	/**
+	*//**
 	 * Verify Signature ECDSA Algorithm
 	 * 
 	 * @param publicKey
 	 * @param data
 	 * @param signature
 	 * @return
-	 */
+	 *//*
 	private static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
@@ -86,14 +86,14 @@ public class CryptoHashUtils {
 		}
 	}
 
-	/**
+	*//**
 	 * Verify Signature RSA Algorithm
 	 * 
 	 * @param publicKey
 	 * @param data
 	 * @param signature
 	 * @return
-	 */
+	 *//*
 	private static boolean verifyRSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature rsaVerify = Signature.getInstance("RSA", "BC");
@@ -106,23 +106,23 @@ public class CryptoHashUtils {
 		}
 	}
 
-	/**
+	*//**
 	 * Calculates the SHA-256 digest and returns the value as a hex string
 	 * (commons-codec)
 	 * 
 	 * @param data
 	 * @return
-	 */
+	 *//*
 	public static String applySHA256(String data) {
 		return DigestUtils.sha256Hex(data);
 	}
 
-	/**
+	*//**
 	 * ECDSA Signature
 	 * @param privateKey
 	 * @param dataInput
 	 * @return
-	 */
+	 *//*
 	private static byte[] signWithECDSA(PrivateKey privateKey, String dataInput) {
 		Signature dsa;
 		byte[] signature = new byte[0];
@@ -139,12 +139,12 @@ public class CryptoHashUtils {
 		return signature;
 	}
 	
-	/**
+	*//**
 	 * RSA Signature
 	 * @param privateKey
 	 * @param dataInput
 	 * @return
-	 */
+	 *//*
 	private static byte[] signWithRSA(PrivateKey privateKey, String dataInput) {
 		Signature rsa;
 		byte[] signature = new byte[0];
@@ -159,6 +159,6 @@ public class CryptoHashUtils {
 			throw new RuntimeException(e);
 		}
 		return signature;
-	}
+	}*/
 
 }

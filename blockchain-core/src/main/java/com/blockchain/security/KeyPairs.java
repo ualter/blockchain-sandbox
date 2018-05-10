@@ -1,16 +1,20 @@
-package com.blockchain.utils;
+package com.blockchain.security;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Getter;
 
 public class KeyPairs {
 	
+	@Autowired
+	private Security security;
+	
 	static {
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+		java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
 
 	@Getter private PrivateKey privateKey;
@@ -21,7 +25,7 @@ public class KeyPairs {
 	}
 
 	private KeyPairs() {
-		KeyPair keyPair = CryptoHashUtils.generateKeyPairs();
+		KeyPair keyPair = security.generateKeyPairs();
 		this.privateKey = keyPair.getPrivate();
 		this.publicKey  = keyPair.getPublic();
 	}

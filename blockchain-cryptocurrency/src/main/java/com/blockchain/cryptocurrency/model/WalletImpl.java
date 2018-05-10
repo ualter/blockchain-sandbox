@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.blockchain.cryptocurrency.pavo.BlockChain;
-import com.blockchain.utils.KeyPairs;
+import com.blockchain.security.KeyPairs;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

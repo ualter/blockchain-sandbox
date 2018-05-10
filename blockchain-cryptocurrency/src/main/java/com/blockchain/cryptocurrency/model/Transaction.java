@@ -8,29 +8,23 @@ import java.util.List;
 import java.util.UUID;
 
 import com.blockchain.cryptocurrency.pavo.BlockChain;
+import com.blockchain.security.Security;
 import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Transaction
  * @author Ualter
- *
  */
 @Data
 @Slf4j
 public class Transaction {
 
-	// Just an UUID for unique identification
 	private String hash;
-	// Amount of coins sent to the recipient
 	private BigDecimal value;
-	// Sender's public key
 	private PublicKey sender;
-	// Receiver's public key
 	private PublicKey recipient;
-	// To guarantee the integrity and protection of this transaction
 	private byte[] signature;
 
 	private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
@@ -91,9 +85,9 @@ public class Transaction {
 		// For a unique value transaction hash 
 		String variation = UUID.randomUUID().toString();
 		
-		return CryptoHashUtils.applySHA256(
-				CryptoHashUtils.encodeBase64(this.sender) + 
-				CryptoHashUtils.encodeBase64(this.recipient) + 
+		return Security.applySHA256(
+				Security.encodeBase64(this.sender) + 
+				Security.encodeBase64(this.recipient) + 
 				this.value.toString() +
 				variation
 		);
@@ -109,25 +103,15 @@ public class Transaction {
 		return total;
 	}
 
-	/**
-	 * Check sender's signature, is it really from him? 
-	 * I mean... generated with his unique and protected PrivateKey, and did not suffer tampering
-	 * 
-	 * @return
-	 */
 	private boolean checkSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.sender) +
-				      CryptoHashUtils.encodeBase64(this.recipient) + 
+		String data = Security.encodeBase64(this.sender) +
+					  Security.encodeBase64(this.recipient) + 
 				      this.value.toString();
 		//@formatter:on
-		return CryptoHashUtils.verifySignature(sender, data, signature);
+		return Security.verifySignature(sender, data, signature);
 	}
 	
-	/**
-	 * Generate the Signature of this Transaction
-	 * @param privateKey
-	 */
 	public void generateSignature(PrivateKey privateKey) {
 		//@formatter:off
 		String data = CryptoHashUtils.encodeBase64(this.sender) +
