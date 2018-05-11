@@ -10,32 +10,38 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.blockchain.cryptocurrency.CurrencyBlock;
-import com.blockchain.cryptocurrency.CurrencyBlockChain;
 import com.blockchain.cryptocurrency.model.Transaction;
 import com.blockchain.cryptocurrency.model.Wallet;
-import com.blockchain.cryptocurrency.model.WalletImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = CurrencyBlockChainConfig.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CurrencyBlockChainTest {
+	
+	@Autowired
+	private CurrencyBlockChain currencyBlockChain;
+	
+	@Autowired
+	private Wallet janeWallet2;
 	
 	private Wallet genesisWallet;
 	
 	@Before
 	public void createTheWorld() {
-		genesisWallet = CurrencyBlockChain.bigBan();
+		genesisWallet = currencyBlockChain.bigBan();
 	}
 	
 	@Test
 	public void firstTestBlockChainTwoBlocks() {
-		Wallet janeWallet    = WalletImpl.build("jane");
-		Wallet johnWallet    = WalletImpl.build("john");
+		Wallet janeWallet    = Wallet.build("jane");
+		Wallet johnWallet    = Wallet.build("john");
 		
 		// Even list transaction
 		CurrencyBlock block = new CurrencyBlock();
@@ -115,8 +121,8 @@ public class CurrencyBlockChainTest {
 	@Test
 	public void secondTestBlockChainSingleBlock() {
 		
-		Wallet janeWallet    = WalletImpl.build("jane");
-		Wallet johnWallet    = WalletImpl.build("john");
+		Wallet janeWallet    = Wallet.build("jane");
+		Wallet johnWallet    = Wallet.build("john");
 		
 		
 		CurrencyBlock block = new CurrencyBlock();

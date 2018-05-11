@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.blockchain.utils.CryptoHashUtils;
+import com.blockchain.security.Security;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -44,7 +44,7 @@ public abstract class AbstractBlock {
 		String calculatedhash   = "";
 		
 		while ( !isHashValid(calculatedhash, difficulty) ) {
-			calculatedhash = CryptoHashUtils.applySHA256(
+			calculatedhash = Security.applySHA256(
 					  data
 					+ Long.toString(this.getTimeStamp())  
 					+ this.getPreviousBlock() // connecting the blocks in the chain (the hash of this one is created using the hash of the previous one)
@@ -69,7 +69,7 @@ public abstract class AbstractBlock {
 		
 		if (hashs.size() == 1) {
 			// Only one register, then there is nothing more to do, the only register's hash is also the Merkle Root
-			merkleRoot =  CryptoHashUtils.applySHA256( hashs.get(0) );
+			merkleRoot =  Security.applySHA256( hashs.get(0) );
 		} else {
 			while ( hashs.size() > 1 ) {
 				hashs = calculateLeavesHash(hashs);
@@ -93,13 +93,13 @@ public abstract class AbstractBlock {
 			if ( index < hashs.size() ) {
 				// Calculate the hash of the Pair
 				String hash2    = hashs.get(index);
-				String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash2 );
+				String hashLeaf = Security.applySHA256( hash1 + hash2 );
 				leavesHash.add(hashLeaf);
 			} else
 			if ( index == hashs.size() ) {
 				// The last one, without a pair, the total List is odd
 				// As the Merkle Tree is a binary tree, we duplicate the last register to calculate the leaf
-				String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash1 );
+				String hashLeaf = Security.applySHA256( hash1 + hash1 );
 				leavesHash.add(hashLeaf);
 			}
 			

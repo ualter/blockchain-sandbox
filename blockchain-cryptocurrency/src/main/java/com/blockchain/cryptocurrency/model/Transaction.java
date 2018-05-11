@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.blockchain.cryptocurrency.CurrencyBlockChain;
-import com.blockchain.utils.CryptoHashUtils;
+import com.blockchain.security.Security;
 
-import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -20,23 +21,21 @@ import lombok.extern.slf4j.Slf4j;
  * @author Ualter
  *
  */
-@Data
 @Slf4j
 public class Transaction {
 
-	// Just an UUID for unique identification
-	private String hash;
-	// Amount of coins sent to the recipient
-	private BigDecimal value;
-	// To guarantee the integrity and protection of this transaction
-	private byte[] signature;
-	// Wallets of the Transaction (Sender and Recipient)
+	@Autowired
+	private Security security;
+	
+	@Getter private String hash;
+	@Getter @Setter private BigDecimal value;
+	@Getter private byte[] signature;
 	@Getter private Wallet sender;
 	@Getter private Wallet recipient;
-	private String nonce;
+	@Getter private String nonce;
 
-	private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
-	private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+	@Getter private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
+	@Getter private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 	
 	public Transaction(Wallet sender, Wallet recipient, float value, List<TransactionInput> inputs) {
 		this.sender             = sender;
@@ -93,11 +92,11 @@ public class Transaction {
 
 	private String calculateTransactionHash() {
 		String nonce = UUID.randomUUID().toString();
-		this.setNonce(nonce);
+		this.nonce = nonce;
 		
-		return CryptoHashUtils.applySHA256(
-			   CryptoHashUtils.encodeBase64(this.sender.getPublicKey()) + 
-			   CryptoHashUtils.encodeBase64(this.recipient.getPublicKey()) + 
+		return Security.applySHA256(
+			   Security.encodeBase64(this.sender.getPublicKey()) + 
+			   Security.encodeBase64(this.recipient.getPublicKey()) + 
 			   String.valueOf(this.value.floatValue()) + 
 			   nonce
 		);
@@ -121,11 +120,11 @@ public class Transaction {
 	 */
 	private boolean checkSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.sender.getPublicKey()) +
-				      CryptoHashUtils.encodeBase64(this.recipient.getPublicKey()) + 
+		String data = Security.encodeBase64(this.sender.getPublicKey()) +
+				      Security.encodeBase64(this.recipient.getPublicKey()) + 
 				      this.value.toString();
 		//@formatter:on
-		return CryptoHashUtils.verifySignature(sender.getPublicKey(), data, signature);
+		return security.verifySignature(sender.getPublicKey(), data, signature);
 	}
 	
 	/**
@@ -134,11 +133,11 @@ public class Transaction {
 	 */
 	private void generateSignature() {
 		//@formatter:off
-		String data = CryptoHashUtils.encodeBase64(this.sender.getPublicKey()) +
-				      CryptoHashUtils.encodeBase64(this.recipient.getPublicKey()) + 
+		String data = Security.encodeBase64(this.sender.getPublicKey()) +
+				      Security.encodeBase64(this.recipient.getPublicKey()) + 
 				      this.value.toString();
 		//@formatter:on
-		this.signature = CryptoHashUtils.sign(this.sender.getPrivateKey(), data);
+		this.signature = security.sign(this.sender.getPrivateKey(), data);
 	}
 
 	@Override
@@ -155,13 +154,7 @@ public class Transaction {
 		builder.append(outputs);
 		builder.append("]");
 		return builder.toString();
-		
-		
 	}
-	
-	
-	
-
 	
 	
 }

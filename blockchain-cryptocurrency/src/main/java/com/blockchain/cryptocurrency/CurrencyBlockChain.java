@@ -13,44 +13,42 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 import com.blockchain.cryptocurrency.model.Transaction;
 import com.blockchain.cryptocurrency.model.TransactionOutput;
 import com.blockchain.cryptocurrency.model.Wallet;
-import com.blockchain.cryptocurrency.model.WalletImpl;
+import com.blockchain.security.Security;
 import com.blockchain.utils.CryptoHashUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This is the Global Ledger, the BlockChain of Coins
  * 
  * @author Ualter Junior
- *
  */
+@Component
 @Slf4j
 public class CurrencyBlockChain {
 
 	// Unspent Transaction Output, UTXO https://bitcoin.org/en/glossary/unspent-transaction-output)
-	private static List<CurrencyBlock>                   BLOCKCHAIN          = new ArrayList<CurrencyBlock>();
+	private static List<CurrencyBlock>           BLOCKCHAIN          = new ArrayList<CurrencyBlock>();
 	private static Map<String,TransactionOutput> UTXOs               = new HashMap<String,TransactionOutput>(); 
 	public static float                          MINIMUM_TRANSACTION = 5;
 	public static int                            DIFFICULTY          = 3;
 	
-	/** 
-	 * The Big Ban
-	 * @return
-	 */
-	public static Wallet bigBan() {
+	
+	public Wallet bigBan() {
 		BLOCKCHAIN           = new ArrayList<CurrencyBlock>();
-		Wallet genesitWallet = WalletImpl.build();
+		Wallet genesitWallet = Wallet.build();
 		CurrencyBlock genesisBlock   = createGenesisBlock(genesitWallet);
 		genesisBlock.calculateHashBlock();
 		genesisBlock.setHeight(0);
 		BLOCKCHAIN.add( genesisBlock );
 		return genesitWallet;
 	}
-	private static CurrencyBlock createGenesisBlock(Wallet genesisWallet) {
+	
+	private CurrencyBlock createGenesisBlock(Wallet genesisWallet) {
 		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
 		Transaction genesisTransaction = new Transaction(genesisWallet, genesisWallet, 1000f, null);
 		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
@@ -68,7 +66,7 @@ public class CurrencyBlockChain {
 	 * Unspent Transaction Output (UTXO), that can be spent as an input in a new transaction
 	 * @param transaction
 	 */
-	public static void addToUTXOs(Transaction t) {
+	public void addToUTXOs(Transaction t) {
 		t.getOutputs().forEach( outputTransaction -> UTXOs.put(outputTransaction.getHash(), outputTransaction) );
 	}
 
@@ -76,7 +74,7 @@ public class CurrencyBlockChain {
 	 * Remove the TransactionsInput created at the Transaction from the UTXOs (they cannot be used anymore, as they were already spent) 
 	 * @param transaction
 	 */
-	public static void removeFromUTXOs(Transaction t) {
+	public void removeFromUTXOs(Transaction t) {
 		t.getInputs().stream()
 			.filter( inputTransaction  -> inputTransaction.getUTXO() != null )
 			.forEach( inputTransaction -> UTXOs.remove( inputTransaction.getHash() ));
@@ -86,7 +84,7 @@ public class CurrencyBlockChain {
 	 * Validate the Transaction Inputs if they are really available as an unspent transaction in the UTXOs
 	 * @param transaction
 	 */
-	public static void validateTransactionInputWithUTXOs(Transaction t) {
+	public void validateTransactionInputWithUTXOs(Transaction t) {
 		t.getInputs().forEach(inputTransaction -> inputTransaction.setUTXO( UTXOs.get(inputTransaction.getHash()) ));
 	}
 	
@@ -95,7 +93,7 @@ public class CurrencyBlockChain {
 	 * @param publicKey
 	 * @return
 	 */
-	public static BigDecimal queryBalance(Wallet wallet) {
+	public BigDecimal queryBalance(Wallet wallet) {
 		if ( BLOCKCHAIN.isEmpty() ) {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
@@ -113,7 +111,7 @@ public class CurrencyBlockChain {
 	 * @param publicKey
 	 * @return
 	 */
-	public static BigDecimal requestBalance(Wallet wallet) {
+	public BigDecimal requestBalance(Wallet wallet) {
 		if ( BLOCKCHAIN.isEmpty() ) {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
@@ -128,7 +126,7 @@ public class CurrencyBlockChain {
 	}
 	
 	
-	public static void addBlock(CurrencyBlock block) {
+	public void addBlock(CurrencyBlock block) {
 		// The BlockChain must be started, the "Genesis" Transaction must appear before
 		if ( BLOCKCHAIN.isEmpty() ) {
 			throw new RuntimeException("The BlockChain must be initialized");
@@ -149,11 +147,11 @@ public class CurrencyBlockChain {
 		previousBlock.setNextBlock(block.getHash());
 	}
 
-	public static Stream<CurrencyBlock> getAllBlocksOfChain() {
+	public Stream<CurrencyBlock> getAllBlocksOfChain() {
 		return BLOCKCHAIN.stream();
 	}
 
-	private static String printBlockChainLineBlock(String value, int longitude) {
+	private String printBlockChainLineBlock(String value, int longitude) {
 		if ( value == null ) {
 			value = " ";
 		}
@@ -161,7 +159,7 @@ public class CurrencyBlockChain {
 		String fillUp     = StringUtils.repeat(" ", sizeLeft);
 		return value + fillUp + "║\n";
 	}
-	public static void printBlockChain(PrintStream out) {
+	public void printBlockChain(PrintStream out) {
 		DecimalFormat df4      = new DecimalFormat("0000");
 		DecimalFormat dfNonce  = new DecimalFormat("###,###,#00");
 		NumberFormat formatter = NumberFormat.getCurrencyInstance();
@@ -249,14 +247,14 @@ public class CurrencyBlockChain {
 	 * @return
 	 */
 	
-	public static boolean validateBlock(CurrencyBlock block) {
+	public boolean validateBlock(CurrencyBlock block) {
 		List<String> listHash = new ArrayList<String>();
 		
 		// Recalculate the Transactions Hash (if the values were not changed, the Hash would be exactly the same - integrity)
 		for(Transaction t : block.getTransactions()) {
-			String hashTransaction = CryptoHashUtils.applySHA256(
-					   CryptoHashUtils.encodeBase64(t.getSender().getPublicKey()) + 
-					   CryptoHashUtils.encodeBase64(t.getRecipient().getPublicKey()) +
+			String hashTransaction = Security.applySHA256(
+					   Security.encodeBase64(t.getSender().getPublicKey()) + 
+					   Security.encodeBase64(t.getRecipient().getPublicKey()) +
 					   String.valueOf(t.getValue().floatValue()) + 
 					   t.getNonce());
 			listHash.add(hashTransaction);

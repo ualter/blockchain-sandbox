@@ -13,12 +13,14 @@ public interface Security {
 	public KeyPair generateKeyPairs();
 	public byte[] sign(PrivateKey privateKey, String dataInput);
 	public boolean verifySignature(PublicKey publicKey, String data, byte[] signature);
+	public void saveKeyPairsToFile(String file);
+	public KeyPairs loadKeyPairsFromFile(String file);
 	
-	static String encodeBase64(Key key) {
+	public static String encodeBase64(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
 	
-	static String applySHA256(String data) {
+	public static String applySHA256(String data) {
 		return DigestUtils.sha256Hex(data);
 	}
 

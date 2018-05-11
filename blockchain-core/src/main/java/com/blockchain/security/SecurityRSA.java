@@ -11,11 +11,13 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.RSAKeyGenParameterSpec;
 
+import org.apache.commons.lang.NotImplementedException;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Component
 @Slf4j
 public class SecurityRSA implements Security {
 
@@ -63,6 +65,16 @@ public class SecurityRSA implements Security {
 			log.error(e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public void saveKeyPairsToFile(String file) {
+		throw new NotImplementedException("To be Done!");
+	}
+
+	@Override
+	public KeyPairs loadKeyPairsFromFile(String file) {
+		throw new NotImplementedException("To be Done!");
 	}
 
 }

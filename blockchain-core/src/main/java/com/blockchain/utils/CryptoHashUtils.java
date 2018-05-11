@@ -1,32 +1,9 @@
 package com.blockchain.utils;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAKeyGenParameterSpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
-import org.apache.commons.codec.digest.DigestUtils;
-
-import com.blockchain.security.KeyPairs;
+import com.blockchain.security.Security;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,12 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("unused")
 public class CryptoHashUtils {
 
-	private static final String END_ECDSA_PUBLIC_KEY    = "-----END ECDSA PUBLIC KEY-----";
-	private static final String BEGIN_ECDSA_PUBLIC_KEY  = "-----BEGIN ECDSA PUBLIC KEY-----";
-	private static final String END_ECDSA_PRIVATE_KEY   = "-----END ECDSA PRIVATE KEY-----";
-	private static final String BEGIN_ECDSA_PRIVATE_KEY = "-----BEGIN ECDSA PRIVATE KEY-----";
+	
 
-	public static String encodeBase64(Key key) {
+	/*public static String encodeBase64(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
 
@@ -88,14 +62,6 @@ public class CryptoHashUtils {
 		}
 	}
 	
-	/**
-	 * Verify Signature ECDSA Algorithm
-	 * 
-	 * @param publicKey
-	 * @param data
-	 * @param signature
-	 * @return
-	 */
 	private static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
@@ -108,14 +74,6 @@ public class CryptoHashUtils {
 		}
 	}
 
-	/**
-	 * Verify Signature RSA Algorithm
-	 * 
-	 * @param publicKey
-	 * @param data
-	 * @param signature
-	 * @return
-	 */
 	private static boolean verifyRSASig(PublicKey publicKey, String data, byte[] signature) {
 		try {
 			Signature rsaVerify = Signature.getInstance("RSA", "BC");
@@ -128,23 +86,10 @@ public class CryptoHashUtils {
 		}
 	}
 
-	/**
-	 * Calculates the SHA-256 digest and returns the value as a hex string
-	 * (commons-codec)
-	 * 
-	 * @param data
-	 * @return
-	 */
 	public static String applySHA256(String data) {
 		return DigestUtils.sha256Hex(data);
 	}
 	
-	/**
-	 * ECDSA Signature
-	 * @param privateKey
-	 * @param dataInput
-	 * @return
-	 */
 	private static byte[] signWithECDSA(PrivateKey privateKey, String dataInput) {
 		Signature dsa;
 		byte[] signature = new byte[0];
@@ -161,12 +106,6 @@ public class CryptoHashUtils {
 		return signature;
 	}
 	
-	/**
-	 * RSA Signature
-	 * @param privateKey
-	 * @param dataInput
-	 * @return
-	 */
 	private static byte[] signWithRSA(PrivateKey privateKey, String dataInput) {
 		Signature rsa;
 		byte[] signature = new byte[0];
@@ -182,9 +121,10 @@ public class CryptoHashUtils {
 		}
 		return signature;
 	}
+	*/
 	
 	//////////////////////////////////// UTILITIES outside application context //////////////////////////////
-	
+	/*
 	public static void saveKeyECSDAPairsInFile(String file) {
 		KeyPair keyPairs = CryptoHashUtils.generateKeyPairs();
 		
@@ -264,7 +204,7 @@ public class CryptoHashUtils {
 		}
 		
 	}
-	
+	*/
 	
 	/**
 	 * This where is calculated the Block's Merkle Root
@@ -280,7 +220,7 @@ public class CryptoHashUtils {
 			String merkleRoot = null;
 			if (hashs.size() == 1) {
 				// Only one register, then there is nothing more to do, the only register's hash is also the Merkle Root
-				merkleRoot =  CryptoHashUtils.applySHA256( hashs.get(0) );
+				merkleRoot =  Security.applySHA256( hashs.get(0) );
 			} else {
 				while ( hashs.size() > 1 ) {
 					hashs = calculateLeavesHash(hashs);
@@ -302,13 +242,13 @@ public class CryptoHashUtils {
 				if ( index < hashs.size() ) {
 					// Calculate the hash of the Pair
 					String hash2    = hashs.get(index);
-					String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash2 );
+					String hashLeaf = Security.applySHA256( hash1 + hash2 );
 					leavesHash.add(hashLeaf);
 				} else
 				if ( index == hashs.size() ) {
 					// The last one, without a pair, the total List is odd
 					// As the Merkle Tree is a binary tree, we duplicate the last register to calculate the leaf
-					String hashLeaf = CryptoHashUtils.applySHA256( hash1 + hash1 );
+					String hashLeaf = Security.applySHA256( hash1 + hash1 );
 					leavesHash.add(hashLeaf);
 				}
 				

@@ -1,6 +1,5 @@
 package com.blockchain.cryptocurrency.app;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -8,11 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.blockchain.utils.CryptoHashUtils;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+@SuppressWarnings("unused")
 public class DeleteLater {
 	
 	public static void main(String[] args) throws Exception {
@@ -20,14 +18,14 @@ public class DeleteLater {
 		//testMerkleRoot();
 		saveLoadKeys();
 	}
-
+	
 	private static void saveLoadKeys() {
 		Path pathFile = Paths.get("src/main/resources/jane.keys");
-		if ( !Files.exists(pathFile) ) {
-			CryptoHashUtils.saveKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
-		}
-		
-		CryptoHashUtils.loadKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
+//		if ( !Files.exists(pathFile) ) {
+//			CryptoHashUtils.saveKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
+//		}
+//		
+//		Security.loadKeyECSDAPairsInFile(pathFile.toAbsolutePath().toString());
 	}
 	
 	private static void testMerkleRoot() {
