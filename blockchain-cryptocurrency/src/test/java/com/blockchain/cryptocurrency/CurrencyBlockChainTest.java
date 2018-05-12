@@ -1,5 +1,9 @@
 package com.blockchain.cryptocurrency;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
 
 import org.junit.Before;
@@ -11,11 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.blockchain.cryptocurrency.block.CurrencyBlock;
+import com.blockchain.cryptocurrency.block.CurrencyBlockChain;
+import com.blockchain.cryptocurrency.block.CurrencyBlockChainConfig;
+import com.blockchain.cryptocurrency.block.printer.CurrencyBlockPrinter;
+import com.blockchain.cryptocurrency.block.printer.CurrencyBlockPrinterType;
+import com.blockchain.cryptocurrency.block.printer.CurrencyBlockPrinterType.OutputType;
+import com.blockchain.cryptocurrency.block.printer.format.CurrencyBlockPrinterDefaultTemplate;
 import com.blockchain.cryptocurrency.transaction.Transaction;
 import com.blockchain.cryptocurrency.wallet.Wallet;
 import com.blockchain.cryptocurrency.wallet.WalletServices;
-
-import static org.junit.Assert.*;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +39,18 @@ public class CurrencyBlockChainTest {
 	
 	@Autowired
 	private WalletServices walletServices;
+	
+	@Autowired
+	@CurrencyBlockPrinterType(OutputType.Console)
+	private CurrencyBlockPrinter printerConsole;
+	
+	@Autowired
+	@CurrencyBlockPrinterType(OutputType.File)
+	private CurrencyBlockPrinter printerFile;
+	
+	@Autowired
+	@CurrencyBlockPrinterType(OutputType.Logger)
+	private CurrencyBlockPrinter printerLogger;
 	
 	private Wallet genesisWallet;
 	
@@ -101,7 +122,7 @@ public class CurrencyBlockChainTest {
 		
 		if ( log.isDebugEnabled() ) {
 			System.out.println(" *** BLOCKs at testBlockChainTwoBlocks");
-			currencyBlockChain.getAllBlocksOfChain().forEach(System.out::println);
+			currencyBlockChain.streamBlockChain().forEach(System.out::println);
 			System.out.println("");
 		}
 		
@@ -114,8 +135,9 @@ public class CurrencyBlockChainTest {
 		block.getTransactions().stream().skip(1).skip(1).findFirst().get().setValue(new BigDecimal(44));
 		assertEquals("Block is valid? (MerkleRoot value is OK?) In this case it shouldn't", false, currencyBlockChain.validateBlock(block));
 		
-		
-		currencyBlockChain.printBlockChain(System.out);
+		printerFile.print(currencyBlockChain.listBlockChain());
+		printerConsole.print(currencyBlockChain.listBlockChain());
+		printerLogger.print(currencyBlockChain.listBlockChain());
 	}
 
 	@Test
@@ -148,7 +170,7 @@ public class CurrencyBlockChainTest {
 		
 		if ( log.isDebugEnabled() ) {
 			System.out.println(" *** BLOCKs at testBlockChainSingleBlock");
-			currencyBlockChain.getAllBlocksOfChain().forEach(System.out::println);
+			currencyBlockChain.streamBlockChain().forEach(System.out::println);
 			System.out.println("");
 		}
 
@@ -167,6 +189,8 @@ public class CurrencyBlockChainTest {
 		block.getTransactions().stream().skip(1).findFirst().get().setValue(new BigDecimal(10));
 		assertEquals("A Not valid BlockChain",true, currencyBlockChain.validateBlock(block));
 		
-		currencyBlockChain.printBlockChain(System.out);
+		printerFile.print(currencyBlockChain.listBlockChain());
+		printerConsole.print(currencyBlockChain.listBlockChain());
+		printerLogger.print(currencyBlockChain.listBlockChain());
 	}
 }

@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.blockchain.cryptocurrency.wallet.Wallet;
 
-@Component
+@Service
 public class TransactionServices {
 	
 	@Autowired

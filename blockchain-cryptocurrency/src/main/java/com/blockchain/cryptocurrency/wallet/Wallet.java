@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.blockchain.cryptocurrency.CurrencyBlockChain;
+import com.blockchain.cryptocurrency.block.CurrencyBlockChain;
 import com.blockchain.cryptocurrency.transaction.Transaction;
 import com.blockchain.cryptocurrency.transaction.TransactionInput;
 import com.blockchain.cryptocurrency.transaction.TransactionOutput;

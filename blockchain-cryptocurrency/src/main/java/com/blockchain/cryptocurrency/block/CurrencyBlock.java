@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency;
+package com.blockchain.cryptocurrency.block;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;

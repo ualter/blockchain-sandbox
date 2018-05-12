@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency;
+package com.blockchain.cryptocurrency.block;
 
 import java.util.List;
 
