@@ -12,23 +12,20 @@ import com.blockchain.cryptocurrency.transaction.Transaction;
 import com.blockchain.cryptocurrency.transaction.TransactionInput;
 import com.blockchain.cryptocurrency.wallet.Wallet;
 import com.blockchain.security.Security;
-import com.blockchain.security.SecurityECDSA;
+import com.blockchain.security.SecurityEncryption;
+import com.blockchain.security.SecurityEncryption.Algorithm;
 
 @Configuration
 @ComponentScan("com.blockchain")
 public class CurrencyBlockChainConfig {
 	
 	@Autowired
+	@SecurityEncryption(Algorithm.ECDSA)
 	private Security security;
 		
 	@Autowired
 	private CurrencyBlockChain currencyBlockChain;
 
-	@Bean
-	public Security security() {
-		return new SecurityECDSA();
-	}
-	
 	@Bean
 	@Scope("prototype")
 	public Wallet wallet(String owner) {

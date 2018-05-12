@@ -22,7 +22,7 @@ import com.blockchain.cryptocurrency.transaction.TransactionServices;
 import com.blockchain.cryptocurrency.wallet.Wallet;
 import com.blockchain.cryptocurrency.wallet.WalletServices;
 import com.blockchain.security.Security;
-import com.blockchain.utils.CryptoHashUtils;
+import com.blockchain.utils.MerkleRoot;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -269,7 +269,7 @@ public class CurrencyBlockChain {
 		}
 		
 		String merkleRootOriginal     = block.getMerkleRoot(); 
-		String merkleRootRecalculated = CryptoHashUtils.MerkleRoot.calculateMerkleRoot(listHash);
+		String merkleRootRecalculated = MerkleRoot.calculate(listHash);
 		if ( log.isDebugEnabled() ) {
 			System.out.println("MerkleRoot(Original).................:" + merkleRootOriginal);
 			System.out.println("MerkleRoot(Recalculated).............:" + merkleRootRecalculated);

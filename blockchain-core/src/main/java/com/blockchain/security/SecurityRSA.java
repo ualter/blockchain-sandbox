@@ -13,14 +13,16 @@ import java.security.spec.RSAKeyGenParameterSpec;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+
+import com.blockchain.security.SecurityEncryption.Algorithm;
 
 import lombok.extern.slf4j.Slf4j;
 
-
+@Component
+@SecurityEncryption(Algorithm.RSA)
 @Slf4j
-public class SecurityRSA /*implements Security*/ {
-	/*
+public class SecurityRSA implements Security {
+	
 	static {
 		java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
@@ -80,6 +82,5 @@ public class SecurityRSA /*implements Security*/ {
 	public KeyPair loadKeyPairsFromFile(String file) {
 		throw new NotImplementedException("To be Done!");
 	}
-	*/
 
 }

@@ -7,7 +7,6 @@ import java.security.PublicKey;
 import java.util.Base64;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Component;
 
 public interface Security {
 	

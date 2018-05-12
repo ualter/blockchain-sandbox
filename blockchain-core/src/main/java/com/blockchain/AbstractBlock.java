@@ -10,14 +10,12 @@ import com.blockchain.security.Security;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
  * @author Ualter Junior
  *
  */
-@Slf4j
 public abstract class AbstractBlock {
 	
 	@Getter @Setter(AccessLevel.PUBLIC)    private Integer height;

@@ -23,11 +23,13 @@ import java.util.Base64;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+
+import com.blockchain.security.SecurityEncryption.Algorithm;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@SecurityEncryption(Algorithm.ECDSA)
 @Slf4j
 public class SecurityECDSA implements Security {
 	
