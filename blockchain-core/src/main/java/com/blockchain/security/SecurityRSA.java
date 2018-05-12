@@ -17,9 +17,13 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+
 @Slf4j
-public class SecurityRSA implements Security {
+public class SecurityRSA /*implements Security*/ {
+	/*
+	static {
+		java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+	}
 
 	@Override
 	public KeyPair generateKeyPairs() {
@@ -73,8 +77,9 @@ public class SecurityRSA implements Security {
 	}
 
 	@Override
-	public KeyPairs loadKeyPairsFromFile(String file) {
+	public KeyPair loadKeyPairsFromFile(String file) {
 		throw new NotImplementedException("To be Done!");
 	}
+	*/
 
 }

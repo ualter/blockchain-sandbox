@@ -31,6 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SecurityECDSA implements Security {
 	
+	static {
+		java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+	}
+	
 	private static final String END_ECDSA_PUBLIC_KEY    = "-----END ECDSA PUBLIC KEY-----";
 	private static final String BEGIN_ECDSA_PUBLIC_KEY  = "-----BEGIN ECDSA PUBLIC KEY-----";
 	private static final String END_ECDSA_PRIVATE_KEY   = "-----END ECDSA PRIVATE KEY-----";
@@ -107,7 +111,7 @@ public class SecurityECDSA implements Security {
 	}
 
 	@Override
-	public KeyPairs loadKeyPairsFromFile(String file) {
+	public KeyPair loadKeyPairsFromFile(String file) {
 		Path path = Paths.get(file);
 		try {
 			
@@ -156,7 +160,7 @@ public class SecurityECDSA implements Security {
 			X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 			PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec);
 			
-			return KeyPairs.generate(privateKey, publicKey);
+			return new KeyPair(publicKey, privateKey);
 		} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
 			throw new RuntimeException(e);
 		}

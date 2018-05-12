@@ -1,9 +1,10 @@
-package com.blockchain.cryptocurrency.model;
+package com.blockchain.cryptocurrency.wallet;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -13,10 +14,14 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.blockchain.cryptocurrency.CurrencyBlockChain;
-import com.blockchain.security.KeyPairs;
+import com.blockchain.cryptocurrency.transaction.Transaction;
+import com.blockchain.cryptocurrency.transaction.TransactionInput;
+import com.blockchain.cryptocurrency.transaction.TransactionOutput;
+import com.blockchain.cryptocurrency.transaction.TransactionServices;
 import com.blockchain.security.Security;
 
 import lombok.Data;
@@ -27,38 +32,36 @@ import lombok.extern.slf4j.Slf4j;
  * @author Ualter Junior
  *
  */
-@Component
 @Slf4j
 @Data
+@Component
+@Scope("prototype")
 public class Wallet {
 	
 	@Autowired
-	private Security security;
+	private TransactionServices transactionServices;
 	
-	@Autowired
+	private Security           security;
 	private CurrencyBlockChain currencyBlockChain;
 	
-	private String   owner;
-	private KeyPairs keyPairs;
+	private String  owner;
+	private KeyPair keyPairs;
 	private Map<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
-	
 	@Autowired
-	public Wallet() {
-		this.owner    = "genesis";
-		this.keyPairs = KeyPairs.generate();
+	public Wallet(Security security, CurrencyBlockChain currencyBlockChain, String owner) {
+		this.security           = security;
+		this.currencyBlockChain = currencyBlockChain;
+		this.owner              = owner;
+		this.generateOrLoadKeyPair();
 	}
 	
-	/**
-	 * @param walletOwner - If not null, the keys will be generated automatically the first time, and then subsequently those Keys will be loaded to used again (using the walletOwner as the key)
-	 */
-	@Autowired
-	public Wallet(WalletIdentification ownerIdentification) {
-	    if ( StringUtils.isBlank( ownerIdentification.getOwnerIdentification() ) ) {
-	    	throw new IllegalArgumentException("Wallet owner identification must no be blank or null!");
+	private void generateOrLoadKeyPair() {
+		if ( StringUtils.isBlank( this.owner ) ) {
+	    	this.owner    = "genesis";
+			this.keyPairs = security.generateKeyPairs();
 		} else {
-			this.owner    = ownerIdentification.getOwnerIdentification();
-			Path pathFile = Paths.get("src/main/resources/" + ownerIdentification.getOwnerIdentification() + ".keys");
+			Path pathFile = Paths.get("src/main/resources/" + this.owner + ".keys");
 			if ( !Files.exists(pathFile) ) {
 				security.saveKeyPairsToFile(pathFile.toAbsolutePath().toString());
 			}
@@ -67,11 +70,11 @@ public class Wallet {
 	}
 	
 	public PublicKey getPublicKey() {
-		return this.keyPairs.getPublicKey();
+		return this.keyPairs.getPublic();
 	}
 	
 	public PrivateKey getPrivateKey() {
-		return this.keyPairs.getPrivateKey();
+		return this.keyPairs.getPrivate();
 	}
 	
 	public void addTransactionOuput(TransactionOutput transactionOutput) {
@@ -92,7 +95,7 @@ public class Wallet {
 		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
 		collectAvailableMoneyForPayment(amount, inputs);
 		
-		Transaction transaction = new Transaction(this, recipient , amount, inputs);
+		Transaction transaction = transactionServices.createTransaction(this, recipient , amount, inputs);
 		if ( !transaction.processTransaction() ) {
 			throw new RuntimeException("The transaction could no be processed");
 		}

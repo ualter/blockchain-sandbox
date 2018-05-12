@@ -1,10 +1,11 @@
-package com.blockchain.cryptocurrency.model;
+package com.blockchain.cryptocurrency.transaction;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.blockchain.cryptocurrency.wallet.Wallet;
 import com.blockchain.security.Security;
 
 import lombok.Getter;

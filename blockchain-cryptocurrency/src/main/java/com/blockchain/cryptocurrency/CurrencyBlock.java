@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 import com.blockchain.AbstractBlock;
-import com.blockchain.cryptocurrency.model.Transaction;
+import com.blockchain.cryptocurrency.transaction.Transaction;
 
 import lombok.Getter;
 

@@ -13,11 +13,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.blockchain.cryptocurrency.model.Transaction;
-import com.blockchain.cryptocurrency.model.TransactionOutput;
-import com.blockchain.cryptocurrency.model.Wallet;
+import com.blockchain.cryptocurrency.transaction.Transaction;
+import com.blockchain.cryptocurrency.transaction.TransactionOutput;
+import com.blockchain.cryptocurrency.transaction.TransactionServices;
+import com.blockchain.cryptocurrency.wallet.Wallet;
+import com.blockchain.cryptocurrency.wallet.WalletServices;
 import com.blockchain.security.Security;
 import com.blockchain.utils.CryptoHashUtils;
 
@@ -30,17 +33,22 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class CurrencyBlockChain {
-
+	
+	@Autowired
+	private WalletServices walletServices;
+	
+	@Autowired
+	private TransactionServices transactionServices;
+	
 	// Unspent Transaction Output, UTXO https://bitcoin.org/en/glossary/unspent-transaction-output)
 	private static List<CurrencyBlock>           BLOCKCHAIN          = new ArrayList<CurrencyBlock>();
 	private static Map<String,TransactionOutput> UTXOs               = new HashMap<String,TransactionOutput>(); 
 	public static float                          MINIMUM_TRANSACTION = 5;
 	public static int                            DIFFICULTY          = 3;
 	
-	
 	public Wallet bigBan() {
-		BLOCKCHAIN           = new ArrayList<CurrencyBlock>();
-		Wallet genesitWallet = Wallet.build();
+		BLOCKCHAIN                   = new ArrayList<CurrencyBlock>();
+		Wallet genesitWallet         = walletServices.createGenesisWallet();
 		CurrencyBlock genesisBlock   = createGenesisBlock(genesitWallet);
 		genesisBlock.calculateHashBlock();
 		genesisBlock.setHeight(0);
@@ -50,7 +58,7 @@ public class CurrencyBlockChain {
 	
 	private CurrencyBlock createGenesisBlock(Wallet genesisWallet) {
 		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
-		Transaction genesisTransaction = new Transaction(genesisWallet, genesisWallet, 1000f, null);
+		Transaction genesisTransaction = transactionServices.createTransaction(genesisWallet, genesisWallet, 1000f, null);
 		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
 		
 		UTXOs.put(genesisTransaction.getOutputs().get(0).getHash(), genesisTransaction.getOutputs().get(0));

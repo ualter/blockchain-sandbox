@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency.model;
+package com.blockchain.cryptocurrency.transaction;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -8,8 +8,11 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.blockchain.cryptocurrency.CurrencyBlockChain;
+import com.blockchain.cryptocurrency.wallet.Wallet;
 import com.blockchain.security.Security;
 
 import lombok.Getter;
@@ -17,15 +20,15 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Transaction
  * @author Ualter
- *
  */
 @Slf4j
+@Component
+@Scope("prototype")
 public class Transaction {
 
-	@Autowired
-	private Security security;
+	private Security           security;
+	private CurrencyBlockChain currencyBlockChain;
 	
 	@Getter private String hash;
 	@Getter @Setter private BigDecimal value;
@@ -37,7 +40,10 @@ public class Transaction {
 	@Getter private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
 	@Getter private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 	
-	public Transaction(Wallet sender, Wallet recipient, float value, List<TransactionInput> inputs) {
+	@Autowired
+	public Transaction(Security security, CurrencyBlockChain currencyBlockChain, Wallet sender, Wallet recipient, float value, List<TransactionInput> inputs) {
+		this.security           = security;
+		this.currencyBlockChain = currencyBlockChain;
 		this.sender             = sender;
 		this.recipient          = recipient;
 		this.value              = BigDecimal.valueOf(value);
@@ -62,7 +68,7 @@ public class Transaction {
 		}
 
 		// Check the transaction inputs, verifying that they were not spent and, use it so... otherwise discard it
-		CurrencyBlockChain.validateTransactionInputWithUTXOs(this);
+		currencyBlockChain.validateTransactionInputWithUTXOs(this);
 		
 		// Checks the value of transaction
 		float totalTransaction = processTotalTransaction(); 
@@ -83,9 +89,9 @@ public class Transaction {
 		this.outputs.add(new TransactionOutput(this.sender, BigDecimal.valueOf(leftOver),this.hash));
 		
 		// Add the Transactions Output generated in this transaction as Unspent Transaction Output (UTXO), that can be spent as an input in a new transaction
-		CurrencyBlockChain.addToUTXOs(this);
+		currencyBlockChain.addToUTXOs(this);
 		// Remove the Transactions Input from the UTXOs (they cannot be used anymore, as they were already spent)
-		CurrencyBlockChain.removeFromUTXOs(this);
+		currencyBlockChain.removeFromUTXOs(this);
 		
 		return true;
 	}

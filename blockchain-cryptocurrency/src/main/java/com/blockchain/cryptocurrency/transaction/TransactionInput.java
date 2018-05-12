@@ -1,4 +1,4 @@
-package com.blockchain.cryptocurrency.model;
+package com.blockchain.cryptocurrency.transaction;
 
 import lombok.Data;
 
