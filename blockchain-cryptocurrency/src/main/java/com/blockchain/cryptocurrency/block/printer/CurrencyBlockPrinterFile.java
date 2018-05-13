@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,8 @@ public class CurrencyBlockPrinterFile implements CurrencyBlockPrinter {
 	@Override
 	public void print(List<CurrencyBlock> listBlocks, CurrencyBlockPrinterTemplate template) {
 		DateTimeFormatter  formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd__HHmm");
-		String             fileName  = "report_BlockChain_" + formatter.format( Instant.now().atZone(ZoneId.systemDefault() ) ); 
+		String             uuid      = UUID.randomUUID().toString().replace("-", "");
+		String             fileName  = "blockChain_" + formatter.format( Instant.now().atZone(ZoneId.systemDefault() ) ) + "_" + uuid; 
 		Path               pathFile  = Paths.get("src/main/resources/reports/" + fileName + ".txt");
 		//Path             pathFile  = Paths.get(fileName + ".txt");
 		try {

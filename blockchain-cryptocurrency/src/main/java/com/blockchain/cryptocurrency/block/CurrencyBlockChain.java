@@ -87,7 +87,7 @@ public class CurrencyBlockChain {
 	}
 	
 	/**
-	 * The Input Transaction are really available as an unspent transaction in the UTXOs (can be spent)?
+	 * The Input Transaction must be available as an unspent transaction in the UTXOs (can be spent)
 	 */
 	public void validateTransactionInputWithUTXOs(Transaction t) {
 		t.getInputs().forEach(inputTransaction -> inputTransaction.setUTXO( utxoServices.getTransaction(inputTransaction.getHash()) ));

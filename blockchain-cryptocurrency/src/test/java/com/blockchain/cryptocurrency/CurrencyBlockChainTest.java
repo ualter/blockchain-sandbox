@@ -48,10 +48,6 @@ public class CurrencyBlockChainTest {
 	@CurrencyBlockPrinterType(OutputType.File)
 	private CurrencyBlockPrinter printerFile;
 	
-	@Autowired
-	@CurrencyBlockPrinterType(OutputType.Logger)
-	private CurrencyBlockPrinter printerLogger;
-	
 	private Wallet genesisWallet;
 	
 	@Before
@@ -137,7 +133,6 @@ public class CurrencyBlockChainTest {
 		
 		printerFile.print(currencyBlockChain.listBlockChain());
 		printerConsole.print(currencyBlockChain.listBlockChain());
-		printerLogger.print(currencyBlockChain.listBlockChain());
 	}
 
 	@Test
@@ -191,6 +186,5 @@ public class CurrencyBlockChainTest {
 		
 		printerFile.print(currencyBlockChain.listBlockChain());
 		printerConsole.print(currencyBlockChain.listBlockChain());
-		printerLogger.print(currencyBlockChain.listBlockChain());
 	}
 }
