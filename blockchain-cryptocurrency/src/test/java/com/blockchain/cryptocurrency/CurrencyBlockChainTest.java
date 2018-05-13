@@ -24,7 +24,7 @@ import com.blockchain.cryptocurrency.block.printer.CurrencyBlockPrinterType.Outp
 import com.blockchain.cryptocurrency.block.printer.format.CurrencyBlockPrinterDefaultTemplate;
 import com.blockchain.cryptocurrency.transaction.Transaction;
 import com.blockchain.cryptocurrency.wallet.Wallet;
-import com.blockchain.cryptocurrency.wallet.WalletServices;
+import com.blockchain.cryptocurrency.wallet.WalletService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +38,7 @@ public class CurrencyBlockChainTest {
 	private CurrencyBlockChain currencyBlockChain;
 	
 	@Autowired
-	private WalletServices walletServices;
+	private WalletService walletServices;
 	
 	@Autowired
 	@CurrencyBlockPrinterType(OutputType.Console)
@@ -82,6 +82,7 @@ public class CurrencyBlockChainTest {
 			 ;
 		currencyBlockChain.addBlock(block);
 		String blockMerkleRoot = block.getMerkleRoot();
+		System.out.println(blockMerkleRoot);
 		assertNotNull("Merkle Root is Null?",blockMerkleRoot);
 		assertEquals("Block is valid? (MerkleRoot value is OK?)", true, currencyBlockChain.validateBlock(block));
 		

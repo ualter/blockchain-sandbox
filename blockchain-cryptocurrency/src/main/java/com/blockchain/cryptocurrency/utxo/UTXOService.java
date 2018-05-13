@@ -17,7 +17,7 @@ import com.blockchain.cryptocurrency.transaction.TransactionOutput;
  *
  */
 @Service
-public class UTXOServices {
+public class UTXOService {
 	
 	private Map<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 

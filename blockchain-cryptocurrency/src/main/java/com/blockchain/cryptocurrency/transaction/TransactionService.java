@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.blockchain.cryptocurrency.wallet.Wallet;
 
 @Service
-public class TransactionServices {
+public class TransactionService {
 	
 	@Autowired
 	ApplicationContext context;

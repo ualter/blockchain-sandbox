@@ -21,7 +21,7 @@ import com.blockchain.cryptocurrency.block.CurrencyBlockChain;
 import com.blockchain.cryptocurrency.transaction.Transaction;
 import com.blockchain.cryptocurrency.transaction.TransactionInput;
 import com.blockchain.cryptocurrency.transaction.TransactionOutput;
-import com.blockchain.cryptocurrency.transaction.TransactionServices;
+import com.blockchain.cryptocurrency.transaction.TransactionService;
 import com.blockchain.security.Security;
 
 import lombok.Data;
@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Wallet {
 	
 	@Autowired
-	private TransactionServices transactionServices;
+	private TransactionService transactionServices;
 	
 	private Security           security;
 	private CurrencyBlockChain currencyBlockChain;

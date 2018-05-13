@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class WalletServices {
+public class WalletService {
 	
 	@Autowired
 	ApplicationContext context;

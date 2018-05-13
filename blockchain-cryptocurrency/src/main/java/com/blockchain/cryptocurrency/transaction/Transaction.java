@@ -2,6 +2,7 @@ package com.blockchain.cryptocurrency.transaction;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class Transaction {
 	@Getter private Wallet sender;
 	@Getter private Wallet recipient;
 	@Getter private String nonce;
+	@Getter private Long   timeStamp;
 
 	@Getter private List<TransactionInput>  inputs  = new ArrayList<TransactionInput>();
 	@Getter private List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
@@ -48,6 +50,7 @@ public class Transaction {
 		this.recipient          = recipient;
 		this.value              = BigDecimal.valueOf(value);
 		this.inputs             = inputs;
+		this.timeStamp          = Instant.now().toEpochMilli();
 		this.hash               = this.calculateTransactionHash();
 		this.generateSignature();
 	}
@@ -68,7 +71,7 @@ public class Transaction {
 		}
 
 		// Check the transaction inputs, verifying that they were not spent and, use it so... otherwise discard it
-		currencyBlockChain.validateTransactionInputWithUTXOs(this);
+		currencyBlockChain.confirmIfTransactionInputAreAvailableToSpent(this);
 		
 		// Checks the value of transaction
 		float totalTransaction = processTotalTransaction(); 
@@ -98,12 +101,13 @@ public class Transaction {
 
 	private String calculateTransactionHash() {
 		String nonce = UUID.randomUUID().toString();
-		this.nonce = nonce;
+		this.nonce   = nonce;
 		
 		return Security.applySHA256(
 			   Security.encodeBase64(this.sender.getPublicKey()) + 
 			   Security.encodeBase64(this.recipient.getPublicKey()) + 
 			   String.valueOf(this.value.floatValue()) + 
+			   Long.toString(this.getTimeStamp()) +
 			   nonce
 		);
 	}

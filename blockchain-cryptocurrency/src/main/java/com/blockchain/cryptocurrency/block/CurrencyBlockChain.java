@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component;
 
 import com.blockchain.cryptocurrency.block.repo.CurrencyBlockRepository;
 import com.blockchain.cryptocurrency.transaction.Transaction;
-import com.blockchain.cryptocurrency.transaction.TransactionServices;
-import com.blockchain.cryptocurrency.utxo.UTXOServices;
+import com.blockchain.cryptocurrency.transaction.TransactionService;
+import com.blockchain.cryptocurrency.utxo.UTXOService;
 import com.blockchain.cryptocurrency.wallet.Wallet;
-import com.blockchain.cryptocurrency.wallet.WalletServices;
+import com.blockchain.cryptocurrency.wallet.WalletService;
 import com.blockchain.security.Security;
 import com.blockchain.utils.MerkleRoot;
 
@@ -35,23 +35,23 @@ import lombok.extern.slf4j.Slf4j;
 public class CurrencyBlockChain {
 	
 	@Autowired
-	private WalletServices walletServices;
+	private WalletService walletService;
 	
 	@Autowired
-	private TransactionServices transactionServices;
+	private TransactionService transactionService;
 	
 	@Autowired
 	private CurrencyBlockRepository currencyBlockRepository;
 	
 	@Autowired
-	private UTXOServices utxoServices;
+	private UTXOService utxoService;
 	
 	public static float                          MINIMUM_TRANSACTION = 5;
 	public static int                            DIFFICULTY          = 3;
 	
 	public Wallet bigBan() {
 		currencyBlockRepository.reset();
-		Wallet genesitWallet         = walletServices.createGenesisWallet();
+		Wallet genesitWallet         = walletService.createGenesisWallet();
 		CurrencyBlock genesisBlock   = createGenesisBlock(genesitWallet);
 		genesisBlock.calculateHashBlock();
 		genesisBlock.setHeight(0);
@@ -60,11 +60,11 @@ public class CurrencyBlockChain {
 	}
 	
 	private CurrencyBlock createGenesisBlock(Wallet genesisWallet) {
-		String genesisHash   = StringUtils.repeat("0", DIFFICULTY);
-		Transaction genesisTransaction = transactionServices.createTransaction(genesisWallet, genesisWallet, 1000f, null);
+		String        genesisHash        = StringUtils.repeat("0", DIFFICULTY);
+		Transaction   genesisTransaction = transactionService.createTransaction(genesisWallet, genesisWallet, 1000f, null);
 		genesisTransaction.addOutput(genesisTransaction.getRecipient(), genesisTransaction.getValue());
-		utxoServices.addTransaction(genesisTransaction.getOutputs().get(0));
-		CurrencyBlock genesisBlock = new CurrencyBlock();
+		utxoService.addTransaction(genesisTransaction.getOutputs().get(0));
+		CurrencyBlock genesisBlock       = new CurrencyBlock();
 		genesisBlock.setPreviousBlock(genesisHash);
 		genesisBlock.getTransactions().add(genesisTransaction);
 		return genesisBlock;
@@ -74,7 +74,7 @@ public class CurrencyBlockChain {
 	 * Result of Transactions (Output) that can be spent in the future (as Input for new Transactions), added to Unspent Transaction Output (UTXO)
 	 */
 	public void addToUTXOs(Transaction t) {
-		t.getOutputs().forEach(utxoServices.addTransaction());
+		t.getOutputs().forEach(utxoService.addTransaction());
 	}
 
 	/**
@@ -83,14 +83,14 @@ public class CurrencyBlockChain {
 	public void removeFromUTXOs(Transaction t) {
 		t.getInputs().stream()
 			.filter( inputTransaction  -> inputTransaction.getUTXO() != null )
-			.forEach( inputTransaction -> utxoServices.removeTransaction(inputTransaction.getHash()) );
+			.forEach( inputTransaction -> utxoService.removeTransaction(inputTransaction.getHash()) );
 	}
 	
 	/**
 	 * The Input Transaction must be available as an unspent transaction in the UTXOs (can be spent)
 	 */
-	public void validateTransactionInputWithUTXOs(Transaction t) {
-		t.getInputs().forEach(inputTransaction -> inputTransaction.setUTXO( utxoServices.getTransaction(inputTransaction.getHash()) ));
+	public void confirmIfTransactionInputAreAvailableToSpent(Transaction t) {
+		t.getInputs().forEach(inputTransaction -> inputTransaction.setUTXO( utxoService.getTransaction(inputTransaction.getHash()) ));
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class CurrencyBlockChain {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
 		
-		double balance = utxoServices.listTransactions()
+		double balance = utxoService.listTransactions()
 				.stream()
 				.filter( e -> e.getValue().isMine(wallet.getPublicKey())  )
 				.mapToDouble(e -> e.getValue().getValue().doubleValue() )
@@ -121,7 +121,7 @@ public class CurrencyBlockChain {
 			throw new RuntimeException("The BlockChain must be initialized");
 		}
 		
-		double balance = utxoServices.listTransactions()
+		double balance = utxoService.listTransactions()
 				.stream()
 				.filter( e -> e.getValue().isMine(wallet.getPublicKey())  )
 				.peek( e ->  wallet.addTransactionOuput(e.getValue()) )
@@ -173,7 +173,8 @@ public class CurrencyBlockChain {
 			String hashTransaction = Security.applySHA256(
 					   Security.encodeBase64(t.getSender().getPublicKey()) + 
 					   Security.encodeBase64(t.getRecipient().getPublicKey()) +
-					   String.valueOf(t.getValue().floatValue()) + 
+					   String.valueOf(t.getValue().floatValue()) +
+					   Long.toString(t.getTimeStamp()) +
 					   t.getNonce());
 			listHash.add(hashTransaction);
 		}

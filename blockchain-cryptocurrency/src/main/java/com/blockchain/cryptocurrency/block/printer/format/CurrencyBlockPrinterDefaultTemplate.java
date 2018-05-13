@@ -17,7 +17,7 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 	protected DecimalFormat    numberFormatter4Digits = new DecimalFormat("0000");
 	protected DecimalFormat    nonceFormatter         = new DecimalFormat("###,###,#00");
 	protected NumberFormat     currencyFormatter      = NumberFormat.getCurrencyInstance();
-	protected SimpleDateFormat dateFormatter          = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+	protected SimpleDateFormat dateFormatter          = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
 	
 	@Override
 	public String applyLayout(List<CurrencyBlock> listBlocks) {
@@ -56,6 +56,12 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 				transactionLine.delete(0, transactionLine.length());
 				transactionLine.append("\n║         │                Value.........: ");
 				transactionLine.append(StringUtils.rightPad(currencyFormatter.format(transaction.getValue().floatValue()),11));
+				blockToString.append(transactionLine.toString());
+				blockToString.append(StringUtils.repeat(" ", longitudeTransaction - transactionLine.length())).append("║");
+				
+				transactionLine.delete(0, transactionLine.length());
+				transactionLine.append("\n║         │                TimeStamp.....: ");
+				transactionLine.append(StringUtils.rightPad(dateFormatter.format(transaction.getTimeStamp()),11));
 				blockToString.append(transactionLine.toString());
 				blockToString.append(StringUtils.repeat(" ", longitudeTransaction - transactionLine.length())).append("║");
 				
