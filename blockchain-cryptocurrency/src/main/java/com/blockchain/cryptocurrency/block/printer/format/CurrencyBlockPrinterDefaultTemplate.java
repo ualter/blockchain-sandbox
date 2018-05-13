@@ -26,22 +26,22 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 		listBlocks.forEach(block -> {
 			String genesis = block.getHeight() == 0 ? "  ► genesis ◄" : " of " + numberFormatter4Digits.format(listBlocks.size() - 1);
 			
-			int longitude = 83;
+			final int longitude = 103;
 			blockToString.append("╔").append(StringUtils.repeat("═",longitude+8)).append("╗").append("\n");
+			int longitudeHeader = longitude - 15;
 			blockToString.append("║ BLOCK #").append(printBlockChainLineBlock(numberFormatter4Digits.format(block.getHeight()) + genesis, longitude));
-			longitude -= 15;
-			blockToString.append("║       ► Hash........: ").append(printBlockChainLineBlock(block.getHash(), longitude));
-			blockToString.append("║       ► Previous....: ").append(printBlockChainLineBlock(block.getPreviousBlock(), longitude));
-			blockToString.append("║       ► Next........: ").append(printBlockChainLineBlock(block.getNextBlock(), longitude));
-			blockToString.append("║       ► TimeStamp...: ").append(printBlockChainLineBlock(dateFormatter.format(block.getTimeStamp()), longitude));
-			blockToString.append("║       ► Nonce.......: ").append(printBlockChainLineBlock(nonceFormatter.format(block.getNonce()), longitude));
-			blockToString.append("║       ► Merkle Root.: ").append(printBlockChainLineBlock(block.getMerkleRoot(), longitude));
-			blockToString.append("╟─────────┬").append(StringUtils.repeat("─",longitude+13)).append("╢");
+			blockToString.append("║       ► Hash........: ").append(printBlockChainLineBlock(block.getHash(), longitudeHeader));
+			blockToString.append("║       ► Previous....: ").append(printBlockChainLineBlock(block.getPreviousBlock(), longitudeHeader));
+			blockToString.append("║       ► Next........: ").append(printBlockChainLineBlock(block.getNextBlock(), longitudeHeader));
+			blockToString.append("║       ► TimeStamp...: ").append(printBlockChainLineBlock(dateFormatter.format(block.getTimeStamp()), longitudeHeader));
+			blockToString.append("║       ► Nonce.......: ").append(printBlockChainLineBlock(nonceFormatter.format(block.getNonce()), longitudeHeader));
+			blockToString.append("║       ► Merkle Root.: ").append(printBlockChainLineBlock(block.getMerkleRoot(), longitudeHeader));
+			blockToString.append("╟─────────┬").append(StringUtils.repeat("─",longitudeHeader+13)).append("╢");
 			
 			AtomicInteger counterTransaction = new AtomicInteger();
 			block.getTransactions().forEach(transaction -> {
 				
-				int longitudeTransction = 68;
+				int longitudeTransaction = (longitude + 10);
 				StringBuilder transactionLine = new StringBuilder();
 				transactionLine.append("\n║    #").append(numberFormatter4Digits.format(counterTransaction.get() + 1));
 				if ( counterTransaction.incrementAndGet() == block.getTransactions().size() ) {
@@ -49,22 +49,24 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 				} else { 
 					transactionLine.append("├").append("─► ");
 				}
-				transactionLine.append("TRANSACTION: Value..: ");
-				transactionLine.append(StringUtils.leftPad(currencyFormatter.format(transaction.getValue().floatValue()),11));
-				transactionLine.append("   Sender..: " + StringUtils.rightPad(transaction.getSender().getOwner(),7));
-				transactionLine.append(" → Recipient..: " + StringUtils.rightPad(transaction.getRecipient().getOwner(),7));
-				
-				//blockToString.append("\n║    #").append(df4.format(counterTransaction.get() + 1));
-//				if ( counterTransaction.incrementAndGet() == block.getTransactions().size() ) {
-//					blockToString.append("├").append("─► ").append(transactionLine.toString());
-//				} else { 
-//					blockToString.append("├").append("─► ").append(transactionLine.toString());
-//				}
+				transactionLine.append("TRANSACTION: Hash..........: ").append(transaction.getHash());
 				blockToString.append(transactionLine.toString());
-				blockToString.append(StringUtils.repeat(" ",(transactionLine.length()) - (longitudeTransction+21))).append("║");
+				blockToString.append( StringUtils.repeat(" ", longitudeTransaction - transactionLine.length() )).append("║");
 				
+				transactionLine.delete(0, transactionLine.length());
+				transactionLine.append("\n║         │                Value.........: ");
+				transactionLine.append(StringUtils.rightPad(currencyFormatter.format(transaction.getValue().floatValue()),11));
+				blockToString.append(transactionLine.toString());
+				blockToString.append(StringUtils.repeat(" ", longitudeTransaction - transactionLine.length())).append("║");
 				
-				blockToString.append("\n║         │   INPUTS --→").append(StringUtils.repeat(" ",longitudeTransction)).append("║");
+				transactionLine.delete(0, transactionLine.length());
+				transactionLine.append("\n║         │                From → To.....: ");
+				transactionLine.append(transaction.getSender().getOwner());
+				transactionLine.append(" ---→ " + StringUtils.rightPad(transaction.getRecipient().getOwner(),7));
+				blockToString.append(transactionLine.toString());
+				blockToString.append(StringUtils.repeat(" ", longitudeTransaction - transactionLine.length())).append("║");
+				
+				blockToString.append("\n║         │   INPUTS --→").append(StringUtils.repeat(" ",longitudeTransaction - 25)).append("║");
 				if ( transaction.getInputs() != null ) {
 					transaction.getInputs().forEach(inputs -> {
 						StringBuilder line = new StringBuilder();
@@ -72,27 +74,26 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 						line.append(StringUtils.leftPad(currencyFormatter.format(inputs.getUTXO().getValue().floatValue()),10)).append(" FROM ");
 						line.append(StringUtils.rightPad(inputs.getUTXO().getRecipient().getOwner(), 10));
 						
-						blockToString.append(line.toString())
-							.append(StringUtils.repeat(" ", line.length() - 13)).append("║");
+						blockToString.append(line.toString()).append(StringUtils.repeat(" ", longitudeTransaction - line.length())).append("║");
 					});
 				}
 				
-				blockToString.append("\n║         │   ←-- OUTPUTS").append(StringUtils.repeat(" ",longitudeTransction-1)).append("║");
+				blockToString.append("\n║         │   ←-- OUTPUTS").append(StringUtils.repeat(" ",longitudeTransaction - 26)).append("║");
 				transaction.getOutputs().forEach(outputs -> {
 					StringBuilder line = new StringBuilder();
 					line.append("\n║         │             - ");
 					line.append(StringUtils.leftPad(currencyFormatter.format(outputs.getValue().floatValue()),10)).append(" TO   ");
 					line.append(StringUtils.rightPad(outputs.getRecipient().getOwner(), 10));
 					
-					blockToString.append(line.toString()).append(StringUtils.repeat(" ", line.length() - 13)).append("║");
+					blockToString.append(line.toString()).append(StringUtils.repeat(" ", longitudeTransaction - line.length())).append("║");
 				});
 				
 				if ( counterTransaction.get() != block.getTransactions().size() ) {
-					blockToString.append("\n╟─────────┼──────────────").append(StringUtils.repeat("─", longitudeTransction-1)).append("╢");
+					blockToString.append("\n╟─────────┼──────────────").append(StringUtils.repeat("─", longitudeTransaction - 26)).append("╢");
 				}
 			});
 			
-			blockToString.append("\n╚═════════╧").append(StringUtils.repeat("═",longitude+13)).append("╝").append("\n");
+			blockToString.append("\n╚═════════╧").append(StringUtils.repeat("═",longitude-2)).append("╝").append("\n");
 		});
 		return blockToString.toString();
 	}
