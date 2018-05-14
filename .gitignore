@@ -25,3 +25,7 @@ NoobChain-Tutorial-Part-2/
 hs_err_pid*
 
 blockchain-cryptocurrency/src/main/resources/reports/
+
+.classpath
+.project
+*/target/**
