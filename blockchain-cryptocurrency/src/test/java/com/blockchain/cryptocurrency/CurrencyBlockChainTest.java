@@ -82,7 +82,7 @@ public class CurrencyBlockChainTest {
 			 ;
 		currencyBlockChain.addBlock(block);
 		String blockMerkleRoot = block.getMerkleRoot();
-		System.out.println(blockMerkleRoot);
+
 		assertNotNull("Merkle Root is Null?",blockMerkleRoot);
 		assertEquals("Block is valid? (MerkleRoot value is OK?)", true, currencyBlockChain.validateBlock(block));
 		

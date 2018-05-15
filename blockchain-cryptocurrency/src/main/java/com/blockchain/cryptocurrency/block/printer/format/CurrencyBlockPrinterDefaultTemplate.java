@@ -26,7 +26,7 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 		listBlocks.forEach(block -> {
 			String genesis = block.getHeight() == 0 ? "  ► genesis ◄" : " of " + numberFormatter4Digits.format(listBlocks.size() - 1);
 			
-			final int longitude = 103;
+			final int longitude = 97;
 			blockToString.append("╔").append(StringUtils.repeat("═",longitude+8)).append("╗").append("\n");
 			int longitudeHeader = longitude - 15;
 			blockToString.append("║ BLOCK #").append(printBlockChainLineBlock(numberFormatter4Digits.format(block.getHeight()) + genesis, longitude));
@@ -49,24 +49,24 @@ public class CurrencyBlockPrinterDefaultTemplate implements CurrencyBlockPrinter
 				} else { 
 					transactionLine.append("├").append("─► ");
 				}
-				transactionLine.append("TRANSACTION: Hash..........: ").append(transaction.getHash());
+				transactionLine.append("TRANSACTION: Hash.......: ").append(transaction.getHash());
 				blockToString.append(transactionLine.toString());
 				blockToString.append( StringUtils.repeat(" ", longitudeTransaction - transactionLine.length() )).append("║");
 				
 				transactionLine.delete(0, transactionLine.length());
-				transactionLine.append("\n║         │                Value.........: ");
+				transactionLine.append("\n║         │                Value......: ");
 				transactionLine.append(StringUtils.rightPad(currencyFormatter.format(transaction.getValue().floatValue()),11));
 				blockToString.append(transactionLine.toString());
 				blockToString.append(StringUtils.repeat(" ", longitudeTransaction - transactionLine.length())).append("║");
 				
 				transactionLine.delete(0, transactionLine.length());
-				transactionLine.append("\n║         │                TimeStamp.....: ");
+				transactionLine.append("\n║         │                TimeStamp..: ");
 				transactionLine.append(StringUtils.rightPad(dateFormatter.format(transaction.getTimeStamp()),11));
 				blockToString.append(transactionLine.toString());
 				blockToString.append(StringUtils.repeat(" ", longitudeTransaction - transactionLine.length())).append("║");
 				
 				transactionLine.delete(0, transactionLine.length());
-				transactionLine.append("\n║         │                From → To.....: ");
+				transactionLine.append("\n║         │                From → To..: ");
 				transactionLine.append(transaction.getSender().getOwner());
 				transactionLine.append(" ---→ " + StringUtils.rightPad(transaction.getRecipient().getOwner(),7));
 				blockToString.append(transactionLine.toString());

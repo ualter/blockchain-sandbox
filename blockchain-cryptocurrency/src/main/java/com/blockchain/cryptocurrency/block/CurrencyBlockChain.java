@@ -67,6 +67,7 @@ public class CurrencyBlockChain {
 		CurrencyBlock genesisBlock       = new CurrencyBlock();
 		genesisBlock.setPreviousBlock(genesisHash);
 		genesisBlock.getTransactions().add(genesisTransaction);
+		genesisBlock.calculateMerkleRoot();
 		return genesisBlock;
 	}
 	
